@@ -1,0 +1,155 @@
+name: opspilot-op001-superset
+
+x-superset-environment: &superset-environment
+  SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+  SUPERSET_SECRET_KEY: op001-local-only-secret-key-not-for-production
+  SUPERSET_DATABASE_URI: postgresql+psycopg2://superset:op001-local-only@metadata-db:5432/superset
+  OP001_ADMIN_USERNAME: op001_admin
+  OP001_ADMIN_PASSWORD: op001-admin-local-only
+
+x-superset-volumes: &superset-volumes
+  - ./superset_config.py:/app/pythonpath/superset_config.py:ro
+
+services:
+  metadata-db:
+    image: postgres:16-bookworm
+    container_name: opspilot-op001-superset-db
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: op001-local-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superset -d superset"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - ./superset-initdb:/docker-entrypoint-initdb.d:ro
+      - op001_superset_db:/var/lib/postgresql/data
+    profiles: ["target-light", "target-reports"]
+
+  init:
+    image: apache/superset:6.1.0-dev
+    container_name: opspilot-op001-superset-init
+    depends_on:
+      metadata-db:
+        condition: service_healthy
+    environment: *superset-environment
+    volumes: *superset-volumes
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        superset db upgrade &&
+        (superset fab create-admin
+        --username "$${OP001_ADMIN_USERNAME}"
+        --firstname OP
+        --lastname 001
+        --email op001@example.invalid
+        --password "$${OP001_ADMIN_PASSWORD}" || true) &&
+        superset init
+    restart: "no"
+    profiles: ["target-light", "target-reports"]
+
+  app-light:
+    image: apache/superset:6.1.0-dev
+    container_name: opspilot-op001-superset-light
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      <<: *superset-environment
+      OP001_REPORTS_ENABLED: "false"
+    volumes: *superset-volumes
+    command: ["gunicorn", "--bind", "0.0.0.0:8088", "--workers", "1", "--threads", "2", "--timeout", "120", "superset.app:create_app()"]
+    ports:
+      - "127.0.0.1:8088:8088"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8088/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+    profiles: ["target-light"]
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: opspilot-op001-superset-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    profiles: ["target-reports"]
+
+  app-reports:
+    image: apache/superset:6.1.0-dev
+    container_name: opspilot-op001-superset-reports
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *superset-environment
+      OP001_REPORTS_ENABLED: "true"
+    volumes: *superset-volumes
+    command: ["gunicorn", "--bind", "0.0.0.0:8088", "--workers", "1", "--threads", "2", "--timeout", "120", "superset.app:create_app()"]
+    ports:
+      - "127.0.0.1:8088:8088"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8088/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+    profiles: ["target-reports"]
+
+  worker:
+    image: apache/superset:6.1.0-dev
+    container_name: opspilot-op001-superset-worker
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *superset-environment
+      OP001_REPORTS_ENABLED: "true"
+    volumes: *superset-volumes
+    command: ["celery", "--app=superset.tasks.celery_app:app", "worker", "--pool=prefork", "--concurrency=1", "--loglevel=INFO"]
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    profiles: ["target-reports"]
+
+  beat:
+    image: apache/superset:6.1.0-dev
+    container_name: opspilot-op001-superset-beat
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *superset-environment
+      OP001_REPORTS_ENABLED: "true"
+    volumes: *superset-volumes
+    command:
+      - celery
+      - --app=superset.tasks.celery_app:app
+      - beat
+      - --pidfile=/tmp/op001-celerybeat.pid
+      - --schedule=/tmp/op001-celerybeat-schedule
+      - --loglevel=INFO
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    profiles: ["target-reports"]
+
+volumes:
+  op001_superset_db:
+    name: opspilot-op001-superset-db

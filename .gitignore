@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+.idea/
+.venv/
+.op001-venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OP-001 downloads and transient runtime data
+spikes/op001/vendor/
+spikes/op001/runtime/
+spikes/op001/results/*.local.json
+
+# Common local artifacts
+node_modules/
+.next/
+*.log
+*.pid
+*.sqlite*
