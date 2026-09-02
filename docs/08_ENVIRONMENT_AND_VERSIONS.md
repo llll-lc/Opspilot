@@ -59,7 +59,7 @@ LLM_TIMEOUT_SECONDS=
 LLM_MAX_RETRIES=
 ```
 
-无效 Key 的真实 401、真实客户端超时和官方错误码映射已通过。普通对话、JSON 与工具调用因本地未提供 Key 暂无成功证据，必须在进入 OP-007 前补跑；API Key 只能由用户写入未提交 `.env`。
+无效 Key 的真实 401、真实客户端超时和官方错误码映射已通过；`deepseek-v4-flash` 普通对话、JSON 与 non-thinking 工具调用也已返回 200 并通过内容/参数校验。V4 默认 thinking 模式与 `tool_choice` 存在兼容约束；OP-007 若启用 thinking 工具循环，必须保存并回传 `reasoning_content`。API Key 只能存在于用户本地未提交 `.env`。
 
 ## 5. 本地 BGE 配置
 

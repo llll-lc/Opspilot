@@ -165,7 +165,7 @@ OPSPILOT_SECURITY_*
 
 ## 13. OP-001 后的未解决风险
 
-- DeepSeek 普通对话、JSON 和工具调用仍需项目所有者在未提交 `.env` 写入 Key 后补跑；无效 Key、超时和错误映射已验证。
+- DeepSeek V4 普通对话、JSON、non-thinking 工具调用、无效 Key、超时和错误映射已验证；thinking 工具循环仍需在 OP-007 验证 `reasoning_content` 回传。
 - Windows 的 `sentencepiece==0.2.2` 对本地 XLM-R tokenizer 发生原生访问冲突；当前 spike 使用已核验等价的 `tokenizer.json`，正式 Linux 容器必须重新验证标准加载路径。
 - 两个 BGE 模型同进程可运行，但峰值约 4.84 GiB；不得与完整 Superset reports 栈默认同时常驻。
 - Superset reports 的截图/邮件链路尚未加入浏览器与 SMTP，只验证到 Web/API、Redis、worker、单 beat。

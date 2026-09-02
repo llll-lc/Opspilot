@@ -118,9 +118,9 @@ def main() -> None:
 
     if key:
         probes = {
-            "chat": {"model": model, "messages": [{"role": "user", "content": "Reply with exactly OP001_OK"}], "max_tokens": 16},
-            "json": {"model": model, "messages": [{"role": "system", "content": "Return JSON only."}, {"role": "user", "content": 'Return this JSON object: {"status":"ok","probe":"op001"}'}], "response_format": {"type": "json_object"}, "max_tokens": 64},
-            "tool": {"model": model, "messages": [{"role": "user", "content": "Check the health of the superset service."}], "tools": [{"type": "function", "function": {"name": "check_service_health", "description": "Read a service health status", "parameters": {"type": "object", "properties": {"service": {"type": "string", "enum": ["superset"]}}, "required": ["service"], "additionalProperties": False}}}], "tool_choice": "required", "max_tokens": 128},
+            "chat": {"model": model, "messages": [{"role": "user", "content": "Reply with exactly OP001_OK"}], "thinking": {"type": "disabled"}, "max_tokens": 16},
+            "json": {"model": model, "messages": [{"role": "system", "content": "Return JSON only."}, {"role": "user", "content": 'Return this JSON object: {"status":"ok","probe":"op001"}'}], "thinking": {"type": "disabled"}, "response_format": {"type": "json_object"}, "max_tokens": 64},
+            "tool": {"model": model, "messages": [{"role": "user", "content": "Check the health of the superset service."}], "thinking": {"type": "disabled"}, "tools": [{"type": "function", "function": {"name": "check_service_health", "description": "Read a service health status", "parameters": {"type": "object", "properties": {"service": {"type": "string", "enum": ["superset"]}}, "required": ["service"], "additionalProperties": False}}}], "tool_choice": "required", "max_tokens": 128},
         }
         result["probes"] = {name: redact_result(request_json(endpoint, key, payload, timeout), name) for name, payload in probes.items()}
     else:
