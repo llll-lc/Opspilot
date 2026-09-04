@@ -8,7 +8,7 @@ OpsPilot 是一个面向企业内部 IT / 数据平台支持团队的“智能�
 
 企业软件支持并不只是回答文档。真实处理过程通常需要在知识库、用户权限、资源状态、后台任务、服务健康和工单系统之间切换，容易出现信息遗漏、排查路径不一致、重复建单、未经授权操作和故障解决后没有验证等问题。
 
-OpsPilot 展示的核心能力是：让 Agent 在权限边界内完成一条可暂停、可恢复、可审计、可评测的诊断链路，而不是做一个通用 FAQ 聊天机器人。
+OpsPilot 展示的核心能力是：让领域内通用主智能体在权限边界内完成一条可暂停、可恢复、可审计、可评测的诊断链路，并在必要时调用受控专业子智能体；它不是通用 FAQ 聊天机器人或任意主机操作 Agent。
 
 ## 核心业务链路
 
@@ -16,8 +16,9 @@ OpsPilot 展示的核心能力是：让 Agent 在权限边界内完成一条可�
 用户报告故障
 → 识别用户、目标系统和受影响资源
 → 补问缺失信息并建立支持工单
-→ 检索官方文档/内部 Runbook
-→ 调用只读工具查询权限、任务、服务状态与日志
+→ 选择版本化排障 Skill，检索官方文档/内部 Runbook
+→ 调用 OpsPilot 稳定工具，由 Tool Gateway 映射或降级到 MCP、REST、只读 Probe
+→ Specialist 已启用且确有上下文隔离价值时才委派，否则由主 Agent 继续诊断
 → 生成并验证候选根因
 → 给出带证据的诊断和修复计划
 → 风险策略判断是否需要人工审批
@@ -39,20 +40,31 @@ Apache Superset 是首个真实目标系统和可复现故障实验环境。它�
 
 后续若增加第二个目标系统，只应新增小型适配器；首版不建设通用插件市场。
 
+## 受控 Agent 架构
+
+1. 确定性底座：认证、工单、权限、Tool Gateway、RAG、审计和幂等。
+2. `Incident Commander`：可独立完成诊断闭环的领域主 Agent。
+3. 标准化增强：正式版本化 Skills；可降级的 Superset MCP Provider。
+4. Specialist 增强：最后实现、可关闭的两个只读专业子智能体，默认开关由独立消融决定。
+
+Agent 只看到 OpsPilot 稳定工具名，由 Tool Gateway 映射到 MCP 或 REST/只读 Probe。MCP `health_check` 只表示连接器可用，不代表 Superset Web/API、Worker、Redis 或业务任务整体健康。所有增强关闭时，主 Agent 仍能完成闭环或安全升级。详细决定见 [`ADR-003`](decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md)。
+
 ## 技术方向（候选组件需实测）
 
 - 前端：Next.js / React / TypeScript，复用经兼容性审计的 Agent Chat UI 能力并增加诊断与工单工作台。
-- Agent：LangGraph 单主图，结构化输出、受控工具调用、检查点和 Human-in-the-loop。
+- Agent：先实现可独立闭环的 LangGraph 主图；两个条件式有界 Specialist 最后实现且可关闭。
+- MCP：OpsPilot 通过 Tool Gateway 接入 Superset 6.1.0 原生 MCP；它是可降级 Provider，兼容性、安全、健康语义和资源仍需 OP-003 实测。
+- Skill：正式核心能力；代码仓库内版本化 `SKILL.md`，渐进加载排障步骤和证据门槛，不支持运行时动态安装。
 - 服务：FastAPI + 开源 LangGraph PostgreSQL persistence；生产 Agent Server 路径已由 ADR-002 排除。
 - 数据：PostgreSQL + pgvector 为核心；首版不设 Agent Redis/MinIO，Target Redis 只属于 Superset reports profile。
 - LLM：DeepSeek 官方 OpenAI-compatible API，具体模型名由环境任务核验并配置化。
-- 检索：本地 BGE-M3 + BGE-Reranker-Large，CPU-only、单推理并发。
+- 检索：元数据过滤 + 精确匹配 + BGE-M3 Dense/Sparse + RRF + 按需 BGE-Reranker-Large；结构感知父子切块，Dense-only 消融基线，小规模精确检索。
 - 目标系统：Apache Superset 的最小 Docker 实验环境；定时报表场景按需启用其 Celery Worker/Beat 等依赖。
 - 开发环境：Windows、Docker Desktop、PyCharm；最终构建一个 OpsPilot 应用镜像，并由 Compose 编排独立数据库和目标系统容器。
 
 ## 项目边界
 
-OpsPilot 是求职作品级 POC，不是 ServiceNow/Jira Service Management 的替代品，也不是承诺可直接接入生产的自动运维平台。首版不做通用 AIOps、基础设施全自动修复、远程 Shell、生产凭据变更、完整 ITSM、多 Agent 自由协作或大型多租户 SaaS。
+OpsPilot 是求职作品级 POC，不是 ServiceNow/Jira Service Management 的替代品，也不是承诺可直接接入生产的自动运维平台。首版不做通用 AIOps、基础设施全自动修复、远程 Shell、生产凭据变更、完整 ITSM、多 Agent 自由协作/循环委派、动态 Skill 安装或大型多租户 SaaS。
 
 ## 规格入口
 
@@ -64,6 +76,8 @@ OpsPilot 是求职作品级 POC，不是 ServiceNow/Jira Service Management 的�
 - Agent 工作流：[`docs/04_AGENT_WORKFLOW.md`](docs/04_AGENT_WORKFLOW.md)
 - 数据与故障真值：[`docs/05_KNOWLEDGE_FAULTS_AND_GROUND_TRUTH.md`](docs/05_KNOWLEDGE_FAULTS_AND_GROUND_TRUTH.md)
 - 开发协作：[`docs/07_DEVELOPMENT_WORKFLOW.md`](docs/07_DEVELOPMENT_WORKFLOW.md)
+- 受控 Agent/MCP/Skills 决定：[`decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md`](decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md)
+- 项目所有者学习地图：[`docs/11_OWNER_LEARNING_MAP.md`](docs/11_OWNER_LEARNING_MAP.md)
 
 ## 诚实的项目表述
 

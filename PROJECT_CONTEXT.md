@@ -1,12 +1,12 @@
 # PROJECT_CONTEXT
 
-最后确认日期：2026-09-02
+最后确认日期：2026-09-04
 
 ## 1. 项目目标
 
 构建一个求职作品级、企业场景可信、能够运行和评测的垂直 Agent：OpsPilot（企业软件智能故障诊断与工单闭环 Agent）。目标岗位包括大模型应用工程师、AI Agent 工程师、LLM 应用工程师、AI 应用后端工程师和企业 AI 解决方案岗位。
 
-项目必须展示的不只是聊天和 RAG，而是完整 Agent 闭环：多轮澄清、知识检索、真实工具调用、动态诊断、权限控制、人工审批、检查点恢复、幂等写入、故障真值、轨迹评测、安全与部署。
+项目必须展示的不只是聊天和 RAG，而是四层、可降级的完整 Agent 闭环：确定性底座、可独立运行的领域内通用主智能体、正式 Skill/可降级 MCP 标准化增强，以及最后实现且可关闭的只读 Specialist 增强。任何增强关闭时，主 Agent 仍能完成诊断闭环或安全升级。
 
 ## 2. 所属领域与目标用户
 
@@ -34,14 +34,15 @@
 2. Agent 只针对关键缺口提问，达到信息充分或明确升级条件。
 3. 创建或关联支持工单，保存会话和诊断运行。
 4. 检索带来源的官方文档与内部 Runbook。
-5. 通过受控工具查询用户权限、资源、任务、服务健康和日志。
-6. 维护候选根因及支持/反对证据，选择下一项最有信息量的检查。
-7. 输出根因、置信状态、证据、影响和修复计划；证据不足则转人工而不是猜测。
-8. 根据策略自动执行低风险动作，或中断等待人工审批。
-9. 从检查点恢复，确保动作、工单和审计事件幂等。
-10. 通过再次查询和用户确认验证恢复，更新/关闭工单。
-11. 对故障真值、工具轨迹、越权行为和恢复结果做离线评测。
-12. 通过 Docker Compose 的资源 profile 完成本地演示。
+5. 按故障类型加载正式版本化排障 Skill，明确必查证据、稳定工具和停止条件；Skill 故障时主 Agent 仍可走受控基线。
+6. 主 Agent 只调用 OpsPilot 稳定工具名，由 Tool Gateway 选择 Superset MCP 或 REST/只读 Probe 并处理降级。
+7. 主智能体仅在 Specialist 已启用且专业上下文确需隔离时委派，并验证其结构化结果；关闭 Specialist 不改变主闭环。
+8. 输出根因、置信状态、证据、影响和修复计划；证据不足则转人工而不是猜测。
+9. 根据策略自动执行低风险动作，或中断等待人工审批。
+10. 从检查点恢复，确保动作、工单和审计事件幂等。
+11. 通过再次查询和用户确认验证恢复，更新/关闭工单。
+12. 对故障真值、Skill 选择、MCP 工具、委派、越权行为和恢复结果做离线评测。
+13. 通过 Docker Compose 的资源 profile 完成本地演示。
 
 ## 5. 首批故障范围
 
@@ -60,17 +61,22 @@
 - 生产环境远程 Shell、任意 SQL、自动修改凭据、自动授予管理员或删除资产。
 - 泛化到所有企业软件、全自动根因分析平台或大规模日志 AIOps。
 - 完整 SaaS 多租户计费、SSO、Kubernetes、微服务拆分。
-- 多 Agent 自由讨论、动态安装工具、MCP 包装内部普通函数。
+- 多 Agent 自由讨论、循环/嵌套委派、动态安装工具或 Skill、MCP 包装内部普通函数。
+- 通用文件/Shell/浏览器 Agent，以及 Tavily、Excel、Docker Socket、任意 SQL 等与核心诊断无关或高风险的 MCP。
 - 为展示技术而引入 Celery；Agent 自身不需要第二套任务队列。
 - 把官方文档或公开 issue 直接当成可量化诊断准确率的真值。
 
 ## 7. 关键技术决定
 
-- 采用模块化单体和一张主要 LangGraph 工作流。
+- 采用 ADR-003 四层单向依赖架构；`Incident Commander` 是唯一业务编排中心和副作用协调者，并能脱离所有增强独立闭环。
+- Skill 是正式核心能力：首批使用数据库连接、访问控制、定时报表三个版本化 Skill；导出和服务健康 Skill 在核心闭环后补充。
+- OpsPilot 作为 MCP Client 接入 Superset 6.1.0 原生 MCP，但 MCP 只是 Tool Gateway 的可降级 Provider；内部工单/RAG/审批函数不 MCP 化。
+- Agent 只看到 OpsPilot 稳定工具名；MCP `health_check` 与 Superset Web/API、Worker/Beat/Redis 健康使用不同稳定工具和证据类型。
+- `Access & Connectivity Specialist` 与 `Jobs & Runtime Specialist` 最后实现、只读、有界且可配置关闭，默认开关由 OP-009 独立消融决定。
 - PostgreSQL 同时承担业务关系数据和 pgvector 向量数据；概念上对应此前 MySQL + Milvus 的合并方案。
 - OP-001 已确认首版不需要 Agent 侧 Redis；Superset 实验环境的 Redis/Celery 是目标系统依赖，配置和命名必须隔离。
 - OP-001 已从首版删除 MinIO；附件、日志样本和评测产物先使用项目数据目录并在 PostgreSQL 记录元数据/哈希，多机对象语义出现后再 ADR。
-- DeepSeek 负责语义推理，不负责 Embedding；BGE-M3 与 BGE-Reranker-Large负责检索。
+- DeepSeek 负责语义推理，不负责 Embedding；RAG 使用元数据过滤、精确匹配、BGE-M3 Dense/Sparse、RRF 和按需 BGE-Reranker-Large，Dense-only 保留为消融基线。
 - 优先使用官方 API 和只读适配器访问 Superset，不直接修改其元数据库。
 - 前端复用官方 Agent Chat UI 固定 commit 的组件与交互，不使用教程 fork 作基座；必须增加工单、证据、工具轨迹、审批和恢复验证工作台。
 - Superset 是首个适配对象，不进入产品名称；来源必须透明披露。
@@ -85,7 +91,7 @@
   - `D:\Agent\models\bge-m3`
   - `D:\Agent\models\bge-reranker-large`
 
-必须控制容器、模型副本和推理并发。完整 Superset 定时报表栈不能与全部开发服务默认常驻；通过 `core`、`target-light`、`target-reports` 等 profile 分阶段启动，最终名称由 OP-001 固化。
+必须控制容器、模型副本和推理并发。完整 Superset 定时报表栈不能与全部开发服务默认常驻；OP-001 已固化 `core`、`target-light`、`target-reports` 等基线，ADR-003 新增的候选 `target-mcp` profile 由 OP-003 实测后决定是否独立保留。
 
 ## 9. 数据与知识原则
 
@@ -111,6 +117,10 @@ Codex 在任务授权范围内负责需求设计、编码、测试、合成数�
 
 - 至少五类故障有可重复注入、确定性真值和端到端演示。
 - Agent 的下一步检查由当前证据动态决定，而不是固定脚本伪装。
+- 关闭 Skill、MCP 和 Specialist 时，主 Agent 仍能通过稳定工具完成支持范围内闭环或正确升级。
+- Superset MCP 的固定版本兼容性、认证/RBAC、只读允许列表、审计和失败降级有实测证据。
+- Skill 能按症状正确选择并约束排查；子智能体只在允许场景调用并返回结构化证据，不拥有写权限。
+- RAG、Skill、MCP、Specialist 分轴评测，不能一次改变多个变量后声称某一组件有效。
 - 诊断结论有知识引用和工具观测，证据不足时正确升级。
 - 写操作有权限分级、HITL、审计、幂等和恢复验证。
 - 评测覆盖根因、轨迹、越权、跨范围泄漏和恢复结果。

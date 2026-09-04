@@ -1,6 +1,6 @@
 # ADR-001：OpsPilot 项目方向与初始架构
 
-- 状态：Accepted（规划期；候选技术需 OP-001 验证）
+- 状态：Accepted（第 8 项由 ADR-002 定版；多 Agent/MCP/Skill 边界由 ADR-003 部分替代）
 - 日期：2026-09-02
 
 ## 背景
@@ -63,3 +63,5 @@ OP-001 必须验证本机资源、Superset 最小/报表 profile、公开 API、
 ## 结果
 
 后续会话不再重新评选 BidPilot 与 OpsPilot。重大方向变化按 `docs/09_RISKS_AND_CHANGES.md` 登记；技术候选由 OP-001 实测，而不是由规划文本假定成功。
+
+2026-09-04 补充：项目所有者确认增加受控子智能体、Superset 原生只读 MCP 和版本化 Skills。该变更只替代本 ADR 中“首版完全排除多 Agent”的部分，不改变禁止内部函数 MCP 化、自由多 Agent、危险工具和未经评测复杂度的原则；以 ADR-003 为准。

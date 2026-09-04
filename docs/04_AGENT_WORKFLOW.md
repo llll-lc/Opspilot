@@ -4,7 +4,7 @@
 
 企业故障处理不是一次问答。它会等待用户、调用多个受控工具、根据证据改变路径、在审批处中断、进程重启后恢复，并在执行动作后再次验证。LangGraph 用于显式管理这些状态、条件和检查点，不用于把每个函数包装成 Agent。
 
-## 2. 单主图
+## 2. 可独立主图与可关闭专业委派
 
 ```text
 START
@@ -19,12 +19,17 @@ normalize_intake
   ↓
 create_or_link_case
   ↓
-retrieve_runbook_context
+retrieve_knowledge_context
+  ↓
+load_versioned_skill_if_enabled
+  ├→ loaded
+  └→ disabled/failed → record_degradation_and_use_bounded_baseline
   ↓
 initialize_hypotheses
   ↓
 diagnostic_loop（有最大步数）
   ├→ select_next_observation
+  ├→ Specialist 已启用且需隔离？→ invoke_read_only_specialist → validate_finding
   ├→ authorize_and_execute_read_tool
   ├→ update_evidence_and_hypotheses
   └→ stop / continue / escalate
@@ -45,6 +50,8 @@ compose_diagnosis_and_action_plan
                                       ↓
                                      END
 ```
+
+主图是可独立运行产品基线。`SKILLS_ENABLED`、`SUPERSET_MCP_ENABLED`、`SPECIALISTS_ENABLED` 用于消融和故障回退；无论取值如何，工单、权限、稳定工具、HITL、验证和升级路径都存在。Skill 是正式交付能力，其关闭只用于对照/降级；Specialist 在 OP-009 最后实现。
 
 ## 3. 有界信息收集
 
@@ -67,11 +74,11 @@ compose_diagnosis_and_action_plan
 
 1. 从当前证据选出仍活跃的少量候选根因。
 2. 为每个候选标记支持、反对和缺失观测。
-3. 在允许工具集合中选择最能区分候选、成本最低的下一项检查。
-4. 服务端完成授权、参数注入、超时、执行和脱敏。
+3. 在 OpsPilot 稳定工具集合中选择最能区分候选、成本最低的下一项检查；模型不能选择 MCP/REST/Probe。
+4. Tool Gateway 完成授权、参数注入、Provider 映射/降级、超时、执行和脱敏。
 5. 更新假设，判断是否达到确认、继续、停止或升级条件。
 
-硬边界：最大诊断步数、单工具重试上限、总超时、禁止重复同参数查询、禁止无信息增益循环。确定值在 OP-007 根据五类场景评测设定。
+硬边界：最大诊断步数、单工具重试上限、总超时、禁止重复同参数查询、禁止无信息增益循环。OP-007 先按三类核心场景设定安全基线，OP-009 扩展到五类场景后再校准；Specialist 不能放宽这些边界。
 
 ## 5. 停止和升级条件
 
@@ -98,6 +105,7 @@ compose_diagnosis_and_action_plan
 
 - 规范化用户症状和生成针对性补问。
 - 基于知识与观测提出少量结构化假设。
+- 在固定 Registry 中选择适用 Skill，并在允许角色中建议是否委派。
 - 在允许列表中建议下一项诊断工具。
 - 总结证据、解释根因、拟定动作计划和工单说明。
 
@@ -106,6 +114,8 @@ compose_diagnosis_and_action_plan
 - 身份认证、组织/资源范围和 RBAC。
 - 工单去重、状态转换、事务、幂等和并发控制。
 - 工具注册、风险等级、参数 Schema、超时和重试。
+- Skill/Agent 版本解析、增强开关、委派条件、上下文裁剪、步数/超时和子智能体只读权限。
+- 稳定 ToolDefinition、MCP/REST/Probe Binding、工具发现快照、固定允许列表、响应大小、Provider 降级和未知工具拒绝。
 - 故障注入/重置、健康判断和评测打分。
 - 检索过滤、引用定位、日志脱敏和审计。
 - 动作审批绑定、执行一次和恢复验证门槛。
@@ -117,7 +127,24 @@ compose_diagnosis_and_action_plan
 - 处理禁止操作、安全事件和超出范围的故障。
 - 对生产采用和最终业务责任作决定。
 
-## 7. 第一版工具目录
+## 7. Skill、子智能体和工具目录
+
+### Skill Registry
+
+首批只允许加载：
+
+- `database-connectivity-triage`
+- `access-control-triage`
+- `scheduled-report-triage`
+
+Skill 只包含排障过程：触发条件、适用版本、必需观测、允许工具组、证据门槛、停止/升级条件、禁止动作和输出契约。事实正文仍由 RAG 提供，业务阶段和权限仍由 LangGraph/确定性代码控制。运行时不存在“自动生成并启用 Skill”路径。
+
+### 专业子智能体（OP-009 最后实现）
+
+- `Access & Connectivity Specialist`：连接、认证、用户/角色/资源访问；只读。
+- `Jobs & Runtime Specialist`：报表、导出、Worker、Redis 和服务状态；只读。
+
+只有 `SPECIALISTS_ENABLED=true` 且单次诊断涉及专业上下文隔离、跨域歧义或评测定义的委派场景时才调用。关闭时主智能体使用同一稳定工具集继续诊断。子智能体返回 `SpecialistFinding`，主智能体必须校验 Schema、证据范围和新鲜度后才能更新假设。
 
 工具保持少而明确，名称最终由 OP-006 固化。
 
@@ -129,15 +156,28 @@ compose_diagnosis_and_action_plan
 - `add_case_note`
 - `get_case_timeline`
 
-### Superset 只读诊断
+### 目标系统稳定元数据工具
 
-- `get_target_resource`
+- `check_target_connector_health`
+- `get_target_instance_summary`
+- `list_target_databases` / `get_target_database_info`
+- `list_target_datasets` / `get_target_dataset_info`
+- `list_target_charts` / `get_target_chart_info`
+- `list_target_dashboards` / `get_target_dashboard_info`
+
+这些都是 OpsPilot 稳定名。Tool Gateway 可以优先映射到通过风险闸门的 Superset MCP，也可以降级到 REST/Adapter；Agent 不知道实际 Provider。`check_target_connector_health` 映射 MCP `health_check` 时只返回 `CONNECTOR` 范围证据，不代表目标应用和运行时健康。MCP 的 `execute_sql`、保存查询、创建数据集、生成/修改图表或仪表盘等工具不注册为稳定工具。
+
+### 原生只读诊断
+
 - `check_user_resource_access`
 - `get_database_connection_status`
 - `get_scheduled_report_status`
 - `get_background_job_status`
-- `get_service_health`
+- `get_target_application_health`
+- `get_target_runtime_health`
 - `search_sanitized_logs`
+
+`get_target_application_health` 观测 Superset Web/API；`get_target_runtime_health` 分别报告 Worker/Beat/Redis。任何一个结果都不能替代另一个，也不能由 MCP 连接器健康推断。
 
 ### 受控动作
 
@@ -156,6 +196,9 @@ compose_diagnosis_and_action_plan
 - `ClarificationRequest`
 - `DiagnosticHypothesis`
 - `ObservationPlan`
+- `SkillSelection`
+- `DelegationDecision`
+- `SpecialistFinding`
 - `Diagnosis`
 - `ActionPlan`
 - `EscalationSummary`
@@ -209,11 +252,22 @@ interrupt 负载包含：动作、精确资源、依据、风险、可逆性、�
 
 - 工单、运行、Thread、组织、目标系统和资源标识。
 - 节点、状态转换、耗时、重试、interrupt 和错误类型。
-- 工具名称/版本、风险级别、授权结果、参数摘要和结果摘要。
+- 稳定工具名称/版本、风险级别、授权结果、参数摘要和结果摘要。
+- Skill/Agent 版本、委派原因、输入 Evidence ID、结果、耗时、Token 和降级原因。
+- 实际 Provider/Binding、MCP Server/目录哈希、上游工具名、调用关联 ID、降级和策略拒绝事件。
 - 假设状态变化及引用 Evidence ID，不保存隐藏思维链。
 - 模型、Prompt、Schema、Token/费用（API 提供时）。
 - 人工审批、动作执行和恢复验证。
 
-## 14. 不采用多 Agent 的理由
+## 14. 为什么只采用受控子智能体
 
-五类故障可以由同一状态模型、工具网关和基于类别的策略节点处理。多 Agent 会引入消息协议、权限传播、重复工具调用和评测困难，目前没有已验证收益。只有单图在固定评测中出现明确、可测的专业 Prompt 冲突时，才考虑受控子图。
+主图仍是唯一业务工作流，因为工单状态、HITL、幂等副作用和恢复验证需要明确所有权。两个专业子智能体仅用于隔离不同领域的工具和上下文，不构成自由协作网络。
+
+硬约束：
+
+- 最多委派给 ADR-003 定义的两个固定角色；禁止动态角色、嵌套和循环委派。
+- 普通单域问题不委派；跨域歧义也优先串行，最多两个专家。
+- 子智能体工具集只读，不包含工单写入、审批、动作或关单。
+- 主图必须验证 `SpecialistFinding`，不能把子智能体文本直接当根因或运行时真值。
+- Specialist 只在独立主 Agent 闭环验收后实现；OP-009 固定 RAG、Skill 和 Provider，仅切换 Specialist off/on 评测委派准确性、根因收益、重复观测、延迟和成本。
+- 无收益时保留实现和演示入口但默认关闭；关闭不得改变主 Agent 的稳定工具、HITL、验证和升级能力。

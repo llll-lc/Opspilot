@@ -35,7 +35,7 @@
 ## 4. 新会话启动流程
 
 1. 完整读取 `AGENTS.md`、`PROJECT_CONTEXT.md`、`CURRENT_STATE.md`、`TASKS.md`。
-2. 读取当前任务文件、直接引用规格、ADR 和前置任务交接。
+2. 读取 `ADR-003`、当前任务文件、直接引用规格、其他最新 ADR 和前置任务交接；不能因 OP-001 旧交接而恢复已被替代的“首版无 MCP/SubAgent/Skill”约束。
 3. 检查 `git status`、最近提交、目录、相关实现和环境状态。
 4. 对照测试和任务表判断已完成、部分完成或文档过期，禁止重复造文件。
 5. 运行轻量基线检查并记录已有失败。
@@ -110,12 +110,12 @@ test(OP-009): add trajectory evaluation suite
 
 ## 11. 复盘要求
 
-每个阶段交付面向学习者的短复盘：业务问题、数据流、Agent 知识、关键取舍、失败样本、运行方法和面试问答。复盘不重复逐行代码，也不能等最终才一次性补写。
+每个阶段交付面向学习者的短复盘：业务问题、数据流、Agent 知识、关键取舍、失败样本、运行方法和面试问答。复盘不重复逐行代码，也不能等最终才一次性补写。开始/完成学习目标统一查 [`docs/11_OWNER_LEARNING_MAP.md`](11_OWNER_LEARNING_MAP.md)；该地图只负责导航，不得复制或覆盖权威技术事实。
 
 ## 12. 新会话提示词模板
 
 ```text
-继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md 和当前任务文件，检查 Git、实际实现、测试与环境。先报告规格和现实冲突以及已存在的能力。本会话只完成 OP-XXX，不提前实现其他任务；完成后按 AGENTS.md 留下验收证据和必要交接。
+继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md 和当前任务文件，检查 Git、实际实现、测试与环境。先报告规格和现实冲突以及已存在的能力。本会话只完成 OP-XXX，不提前实现其他任务；完成后按 AGENTS.md 留下验收证据和必要交接。
 ```
 
 不需要把旧会话全部讨论或为每个新会话重新生成长提示词。

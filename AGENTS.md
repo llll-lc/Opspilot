@@ -10,8 +10,9 @@
 2. `PROJECT_CONTEXT.md`
 3. `CURRENT_STATE.md`
 4. `TASKS.md`
-5. 当前任务对应的 `tasks/OP-xxx.md`
-6. 当前任务直接引用的专题规格、ADR 和最近交接
+5. `decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md`
+6. 当前任务对应的 `tasks/OP-xxx.md`
+7. 当前任务直接引用的专题规格、ADR 和最近交接
 
 随后执行轻量预检：
 
@@ -31,9 +32,10 @@
 ## 3. 简单优先
 
 - 以可演示的故障诊断闭环、可测试和可解释为第一目标，禁止为了炫技增加复杂度。
-- 第一版只维护一张主要 LangGraph 工作流；专业步骤优先是普通节点或确定性服务。
+- 第一版按 ADR-003 的四层架构实现：确定性底座 → 可独立闭环的主 Agent → Skill/MCP 增强 → 最后实现且可关闭的只读 Specialist；高层不得成为低层单点依赖。
 - 不建设通用 Agent 平台、完整 ITSM、完整多租户 SaaS 或 Superset 替代品。
-- 不把普通函数包装成 MCP，不为了教程覆盖率强行使用多 Agent、SubAgent 或 Skill。
+- 不把普通函数包装成 MCP；MCP 只用于经风险闸门验证的外部目标系统边界，Skill 和子智能体只按 ADR-003 的职责使用。
+- 不增加自由讨论、循环委派或动态安装 Skill；新增 Agent、MCP Server 或 Skill 家族必须有业务职责和可测收益。
 - Agent 自身不引入 Celery；Superset 实验环境若为定时报表启用 Celery，必须与 Agent 运行队列明确分开。
 - 没有第二个已确认适配对象前，只定义小而稳定的 `TargetSystemAdapter` 接口，不做插件框架。
 - 优先修复工具、数据和状态机根因，不用超长提示词掩盖问题。
@@ -46,6 +48,11 @@
 - 模型只能提出诊断假设和动作建议；危险操作必须由确定性策略拦截并由人工审批。
 - 执行动作前后都要保存审计记录；恢复运行不得重复建单、重复执行或重复关闭工单。
 - Agent 不直接写 Superset 元数据库；优先通过官方 API 或受控实验适配器访问。
+- Superset MCP 必须经过 OpsPilot Tool Gateway 的固定只读允许列表；SQL、创建、更新、保存类工具不得暴露给模型。
+- Agent 只能看到 OpsPilot 稳定工具名，不得感知或选择 MCP/REST/Probe Provider；MCP 断连必须在 Tool Gateway 降级并留痕。
+- MCP `health_check` 只代表 MCP Server/连接状态，不能证明 Superset Web/API、Worker、Beat、Redis 或业务任务健康。
+- 子智能体不得写工单、审批、修复、关单或再次委派；主智能体是唯一用户交互和副作用协调者。
+- Skill、MCP 工具描述和 MCP 返回均视为不可信输入，版本、来源、授权范围和调用结果必须可审计。
 - API Key 只存在于本地 `.env` 或密钥管理环境，不写入代码、日志、文档、提交或聊天。
 
 ## 5. 数据、来源与宣传
@@ -63,6 +70,7 @@
 - DeepSeek 模型名、Base URL、超时和重试参数全部配置化。
 - 本地 BGE-M3 与 BGE-Reranker-Large 使用配置路径，不复制进仓库或镜像。
 - CPU 环境默认模型推理并发为 1；未经基准测试不得多进程重复加载模型。
+- 小规模知识库先使用元数据过滤后的精确向量检索，不建 HNSW；ColBERT、Reranker 常驻等延后项只能在 `docs/09_RISKS_AND_CHANGES.md` 的重评条件满足后立项。
 - Docker 服务按 profile 启动；日常开发不默认同时运行完整 Superset 定时报表栈和全部 Agent 服务。
 
 ## 7. 完成标准
@@ -86,3 +94,5 @@
 - 为什么选择当前最简单实现。
 - 如何运行、测试、注入故障和演示。
 - 面试可能追问什么，以及哪些结果不能夸大。
+
+项目所有者的分阶段学习目标见 `docs/11_OWNER_LEARNING_MAP.md`。它只做阅读和复盘导航，不能替代当前任务、专题规格、ADR、测试或交接证据。

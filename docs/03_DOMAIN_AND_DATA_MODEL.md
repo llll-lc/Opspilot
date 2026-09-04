@@ -1,6 +1,6 @@
 # 03 领域模型与数据设计
 
-本文件定义业务概念和关系，具体表名、字段类型、索引与迁移由 OP-003 实现后回写。概念模型不是最终 SQL。
+本文件定义业务概念和关系，具体表名、字段类型、索引与迁移由 OP-004 实现后回写。概念模型不是最终 SQL。
 
 ## 1. 核心实体
 
@@ -13,9 +13,13 @@
 | SupportCase | 一次支持工单 | 关联用户、资源、诊断运行和时间线 |
 | CaseMessage | 用户/支持/Agent 的可见消息 | 属于工单，区分内容来源 |
 | DiagnosticRun | 一次可恢复诊断执行 | 关联 LangGraph Thread/Run、版本和状态 |
+| AgentDefinition | 主智能体/专业子智能体的固定契约 | 定义角色、工具组、最大步数和禁止能力 |
+| DelegationRun | 主智能体对专业子智能体的一次有界委派 | 关联输入摘要、Agent 版本、结果、耗时和状态 |
+| SkillVersion | 一份经审核的版本化排障方法 | 关联适用症状、工具组、知识来源和内容哈希 |
 | Hypothesis | 候选根因 | 拥有支持/反对证据和当前状态 |
 | Evidence | 知识引用、工具观测、用户确认或验证结果 | 连接工单、运行、假设和来源 |
-| ToolDefinition | 工具契约与风险元数据 | 定义读写级别、参数和授权策略 |
+| ToolDefinition | Agent 可见的 OpsPilot 稳定工具契约 | 定义稳定名、业务语义、读写级别、Schema 和授权策略 |
+| ToolProviderBinding | 稳定工具到 MCP/REST/Probe 的映射 | 定义 Provider 顺序、上游名称、转换、健康与降级策略 |
 | ToolExecution | 一次工具调用 | 保存请求摘要、结果、耗时、授权与幂等键 |
 | ActionPlan | 建议执行的修复步骤 | 关联风险、预期、验证计划和审批 |
 | Approval | 人工审批决定 | 保存审批人、范围、期限、理由和版本 |
@@ -23,7 +27,7 @@
 | Verification | 修复后验证 | 保存系统证据、用户确认和结果 |
 | AuditEvent | 不可静默覆盖的操作事件 | 记录谁在何时改变了什么 |
 | KnowledgeDocument | 官方资料或内部 Runbook 元数据 | 拥有版本、来源、许可和 Chunk |
-| KnowledgeChunk | 检索最小单元 | 保存文本、定位、Embedding 和范围 |
+| KnowledgeChunk | 父块或可召回子块 | 保存结构边界、父子关系、原文定位及 Dense/Sparse 表示版本 |
 | FaultScenario | 可复现故障定义与真值 | 关联注入、重置、预期工具和根因 |
 | EvaluationCase/Run | 评测输入、输出和指标 | 记录代码、数据、模型和工具版本 |
 
@@ -38,7 +42,10 @@ Organization
    ├─ CaseMessage
    ├─ DiagnosticRun
    │  ├─ Hypothesis ─ Evidence
+   │  ├─ SkillVersion
+   │  ├─ DelegationRun ─ AgentDefinition
    │  ├─ ToolExecution ─ Evidence
+   │  │       └─ ToolDefinition ─ ToolProviderBinding
    │  └─ ActionPlan ─ Approval ─ ActionExecution ─ Verification
    └─ AuditEvent
 
@@ -63,6 +70,7 @@ FaultScenario ─ EvaluationCase ─ EvaluationRun
 DiagnosticRun 保存长期业务事实：
 
 - 工单、Thread/Run、Prompt、模型、工具目录和知识索引版本。
+- `skills_enabled`、`superset_mcp_enabled`、`specialists_enabled` 及实际降级路径。
 - 当前阶段、结论等级、根因代码和升级原因。
 - 已完成检查、重试次数、降级组件和成本摘要。
 
@@ -72,6 +80,7 @@ LangGraph State 只保存执行所需的小型引用：
 - `target_system_id`, `resource_refs`
 - `diagnostic_run_id`, `thread_id`
 - `normalized_symptom`, `missing_fields`
+- `selected_skill_version_ids`, `delegation_run_ids`
 - `hypothesis_ids`, `active_hypothesis_ids`
 - `completed_tool_execution_ids`, `step_count`
 - `pending_action_plan_id`, `pending_approval_id`
@@ -97,7 +106,7 @@ Evidence 类型：
 - `ACTION_RESULT`：工具执行返回。
 - `VERIFICATION`：处置后恢复证据。
 
-每条 Evidence 保存来源类型、来源 ID、时间、内容哈希、安全摘要、可见范围、支持/反对关系和是否过期。知识证据不能冒充运行时观测。
+每条 Evidence 保存来源类型、来源 ID、时间、内容哈希、安全摘要、可见范围、支持/反对关系和是否过期。健康类观测还必须记录 `health_scope`（如 `CONNECTOR`、`APPLICATION`、`RUNTIME_COMPONENT`、`BUSINESS_JOB`）；MCP `health_check` 只能产生 `CONNECTOR` 证据。知识证据不能冒充运行时观测，局部健康不能冒充整体健康。
 
 ## 6. 工具契约与风险级别
 
@@ -108,7 +117,11 @@ Evidence 类型：
 | `APPROVAL_REQUIRED` | 对目标系统产生可见副作用 | 重跑报表、重试导出 | interrupt 后由授权人批准 |
 | `FORBIDDEN` | 首版永不自动执行 | 改凭据、授管理员、任意 SQL/Shell、删资产 | 不注册为模型可用工具 |
 
-ToolExecution 保存：工具/Schema 版本、服务端注入的授权范围、请求安全摘要、响应安全摘要、错误类型、开始/结束时间、重试次数、幂等键和关联审计事件。
+ToolDefinition 只描述 OpsPilot 稳定名和业务语义。Agent/Skill 只能引用稳定名，不能出现 Superset 原始 MCP 名称、REST URL 或 Probe 细节。
+
+ToolProviderBinding 记录 `provider_type`（`MCP`/`REST`/`PROBE`/`INTERNAL`）、优先级、MCP Server/REST 端点标识、外部工具名、发现目录哈希、输入输出转换、健康条件和可降级目标。外部 MCP 新增或改名的工具不会自动生成 ToolDefinition 或获得权限。
+
+ToolExecution 保存：稳定工具名/Schema 版本、实际 Provider/Binding 版本、上游工具名与 MCP/REST 请求关联 ID、降级原因、服务端注入的授权范围、请求/响应安全摘要、错误类型、开始/结束时间、重试次数、幂等键和关联审计事件。
 
 ## 7. ActionPlan、Approval 与 Verification
 
@@ -144,7 +157,31 @@ VERIFYING → DIAGNOSING / ESCALATED
 
 模型只能建议下一状态；服务端验证当前状态、角色和前置条件。历史状态不覆盖，通过 AuditEvent 记录。
 
-## 9. 知识、来源与向量
+## 9. Agent、委派与 Skill
+
+AgentDefinition 至少定义：
+
+- `agent_key`, `version`, `role`, `allowed_tool_groups`。
+- `max_steps`, `timeout_seconds`, `max_delegations`。
+- 输入/输出 Schema、禁止能力和 Prompt/策略内容哈希。
+
+`Incident Commander` 是唯一可与用户交互并协调业务写操作的主智能体。在 Skill、MCP 和 Specialist 全部关闭时，它仍使用相同 ToolDefinition 完成诊断闭环或安全升级。两个专业子智能体只允许只读工具，`max_delegations=0`，并在主闭环完成后才实现。
+
+DelegationRun 至少保存：
+
+- 主运行、发起节点、目标 Agent、授权组织/目标系统/资源范围。
+- 脱敏输入摘要及其哈希、可见 Evidence ID、SkillVersion ID。
+- `SpecialistFinding`、支持/反对 Evidence ID、缺失证据、耗时、Token、错误和降级结果。
+
+SkillVersion 至少保存或由 manifest 提供：
+
+- `skill_key`, `version`, `content_hash`, `status`。
+- 触发症状、目标系统/版本、允许工具组、引用的 Runbook/来源 ID。
+- 证据门槛、停止/升级条件、禁止动作、输出 Schema 版本。
+
+正式运行只能引用固定 Registry 中 `ACTIVE` 的只读版本；运行中不自动修改或安装 Skill。历史 DiagnosticRun 始终保留当时的 Skill/Agent 内容哈希。
+
+## 10. 知识、来源与向量
 
 KnowledgeDocument 至少保存：
 
@@ -153,9 +190,11 @@ KnowledgeDocument 至少保存：
 - 采集方式、解析版本、有效时间和可见范围。
 - `OFFICIAL_DOC`、`OFFICIAL_REPOSITORY`、`PUBLIC_ISSUE`、`INTERNAL_RUNBOOK`、`SYNTHETIC` 标记。
 
-KnowledgeChunk 保存定位、正文安全快照、1024 维向量、Embedding 版本和检索元数据。不同 Embedding 空间不能混用；更新文档产生新版本，不静默覆盖历史引用。
+KnowledgeChunk 至少区分 `PARENT` 与 `CHILD`，保存 `parent_chunk_id`、结构路径、结构单元类型、原文定位、正文安全快照、1024 维 Dense 向量、BGE-M3 Sparse lexical weights、Embedding 版本和检索元数据。子块参与精确/Dense/Sparse 召回与重排；父块不直接争夺排名，只在子块命中后补充上下文。
 
-## 10. FaultScenario 真值结构
+标题、代码块、配置段、表格和连续步骤应记录为不可中间硬切的结构单元。不同 Dense/Sparse 表示版本不能混用；更新文档产生新版本，不静默覆盖历史引用。小规模阶段不要求 HNSW/ColBERT 字段。
+
+## 11. FaultScenario 真值结构
 
 建议字段：
 
@@ -165,24 +204,27 @@ KnowledgeChunk 保存定位、正文安全快照、1024 维向量、Embedding �
 - `user_symptom_variants`
 - `expected_root_cause_code`
 - `required_observations`, `required_tool_groups`
+- `expected_skill_keys`, `allowed_specialist_agents`, `delegation_expected`
+- `required_health_scopes`，防止连接器健康替代应用/运行时健康证据
 - `forbidden_tools`, `allowed_actions`, `approval_required`
 - `expected_verification`
 - `difficulty`, `distractors`, `dataset_split`
 
 注入和重置必须是受控白名单操作，由测试夹具执行，不开放给普通 Agent 工具。
 
-## 11. 范围与数据隔离
+## 12. 范围与数据隔离
 
 即使求职版只使用一个演示组织，也必须：
 
 - 业务表保留 `organization_id`。
 - 工单和工具查询绑定 `target_system_id`、用户和资源范围。
+- 子智能体继承的是服务端缩小后的范围快照，不能从 Prompt 或 MCP 返回扩大范围。
 - Repository/Service 层从认证上下文注入过滤，忽略模型企图传入的越权组织 ID。
 - 向量检索先按组织、来源可见性、目标系统和版本过滤。
 - 对象键包含组织/工单层级，但权限不能只依赖路径。
 - 用两个演示组织/两个用户做隔离测试，不需要实现完整租户计费。
 
-## 12. 幂等、版本和并发
+## 13. 幂等、版本和并发
 
 - 创建工单：`source_event_id` 或确定性去重键。
 - 图节点写入：`diagnostic_run_id + node + semantic_step/version`。
@@ -190,9 +232,9 @@ KnowledgeChunk 保存定位、正文安全快照、1024 维向量、Embedding �
 - 审批：唯一动作版本 + 审批角色，重复提交返回已有结果。
 - 关闭工单：要求最新 Verification 已通过并使用乐观锁/版本号。
 
-Prompt、Schema、工具、知识、模型、故障场景、评测数据和代码提交都要记录版本。并发冲突必须显式返回，不能最后写入者静默覆盖人工决定。
+Prompt、Schema、AgentDefinition、Skill、稳定工具、ProviderBinding、MCP 工具目录、知识/父子块索引、Dense/Sparse/RRF/Reranker 配置、模型、故障场景、评测数据和代码提交都要记录版本。并发冲突必须显式返回，不能最后写入者静默覆盖人工决定。
 
-## 13. 日志与保留
+## 14. 日志与保留
 
 - 普通日志不保存 API Key、密码、Cookie、完整连接串或完整敏感附件。
 - 目标系统日志进入证据前先脱敏并限制长度；原始样本放受控对象存储。

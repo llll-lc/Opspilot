@@ -11,7 +11,7 @@
 | 开发盘 | D 盘约 157.83 GB 剩余 |
 | WSL | WSL 2.7.8，kernel 6.18.33.1；Ubuntu-24.04 停止，docker-desktop 运行 |
 | 容器 | Docker Desktop 4.78.0；Engine/Client 29.5.3；Compose 5.1.4；Linux/amd64；cgroup v2；分配约 6.70 GiB、16 CPU |
-| Git | 2.54.0.windows.1；OP-001 初始化本地 `main` 仓库；无 remote |
+| Git | 2.54.0.windows.1；OP-001 初始化本地 `main` 仓库；当前已配置 GitHub `origin` |
 | Python | 统一 3.12.4（Anaconda）；`py` 默认 3.13 不用于项目；uv 0.12.1 |
 | Node | Node 24.16.0、npm 11.13.0、pnpm 10.5.1、Corepack 0.35.0 |
 | Embedding | `D:\Agent\models\bge-m3` |
@@ -41,6 +41,7 @@ OP-001 检查时 3000、5432、6379、8000、8088、9000、9001、2024、8123 �
 | Redis | Agent 侧删除 | 仅 `target-reports` 使用隔离的 `redis:7.4-alpine` |
 | MinIO | 首版删除 | 项目数据目录 + PostgreSQL 元数据/哈希；多机需求再 ADR |
 | Superset | `apache/superset:6.1.0-dev` | 实验固定 6.1.0；公开 API、健康、种子、reports 组合已验证 |
+| Superset MCP | 6.1.0 原生能力候选 | 官方版本化用户文档已确认工具目录；启动/认证/禁用/审计/资源由 OP-003 实测 |
 | 前端 | 官方 Agent Chat UI commit `3255173...` | MIT；Next 16.3.3、React 19.2.8、SDK 1.10.0；构建通过 |
 
 Redis 和 MinIO 不是为了“技术栈齐全”而强制保留；OP-001 已从 Agent 首版删除两者。未来只有新职责和资源证据充分时才能通过 ADR 重新引入。
@@ -59,20 +60,21 @@ LLM_TIMEOUT_SECONDS=
 LLM_MAX_RETRIES=
 ```
 
-无效 Key 的真实 401、真实客户端超时和官方错误码映射已通过；`deepseek-v4-flash` 普通对话、JSON 与 non-thinking 工具调用也已返回 200 并通过内容/参数校验。V4 默认 thinking 模式与 `tool_choice` 存在兼容约束；OP-007 若启用 thinking 工具循环，必须保存并回传 `reasoning_content`。API Key 只能存在于用户本地未提交 `.env`。
+无效 Key 的真实 401、真实客户端超时和官方错误码映射已通过；`deepseek-v4-flash` 普通对话、JSON 与 non-thinking 工具调用也已返回 200 并通过内容/参数校验。正式基线使用 non-thinking 工具循环。V4 thinking 与 `tool_choice` 存在兼容约束，延后到 `docs/09_RISKS_AND_CHANGES.md` 的重评条件满足后再做独立 spike；届时必须验证并正确回传 `reasoning_content`。API Key 只能存在于用户本地未提交 `.env`。
 
 ## 5. 本地 BGE 配置
 
 ### BGE-M3
 
-- 规划使用稠密向量能力，输出 1024 维。
+- 正式 RAG 目标同时使用 1024 维 Dense 和 Sparse lexical weights，并分别版本化。
 - 不因为模型支持更长输入就默认使用超长分块。
-- 稀疏和多向量能力只有评测证明收益后才增加。
+- OP-001 已验证 Dense 输出；Sparse 输出格式、存储和融合接口由 OP-005 单独验证，不能把目标设计误写成已完成事实。
+- Sparse 是否产生净收益由独立 RAG 消融验证；ColBERT/multi-vector 暂不实现。
 
 ### BGE-Reranker-Large
 
 - 只对小候选集使用。
-- 是否常驻、按需加载或最终不启用由 CPU 内存与检索收益共同决定。
+- OP-005 实现按需重排并保留可关闭开关；是否默认启用由独立 RAG 消融决定，常驻进程仅在风险文档的重评条件满足后考虑。
 
 OP-001 CPU 基准（4 线程、并发 1、短批次 4、7 次）：BGE-M3 输出 1024 维，组合测试中 P50/P95 为 424/607 ms；Reranker raw-logit P50/P95 为 835/920 ms；两模型组合加载 9.30 s + 12.29 s，进程 RSS 峰值约 4.84 GiB。结论是技术上可并存，但默认按需/串行，收益仍由 OP-005 评测决定。
 
@@ -91,6 +93,7 @@ Windows 路径映射到容器时必须转换为容器内挂载路径；不得在
 
 - Superset 是开源 BI/数据探索 Web 应用，首个真实适配对象；代码采用 Apache License 2.0，使用代码/资产时保留许可证与 NOTICE，并说明无官方隶属关系。
 - 官方提供 REST API/OpenAPI；项目优先调用公开 API，不依赖私有 ORM 或直接写元数据库。
+- 6.1.0 版本化用户文档提供原生 MCP 工具目录；当前管理文档说明独立 MCP 进程、认证/Scope 和工具禁用。管理文档是滚动版本，固定镜像仍须 OP-003 实测，不能沿用文档默认值作成功证据。
 - Alerts & Reports 场景通常涉及独立 Redis、Celery Worker、单一 Beat，并可能需要无头浏览器。
 - 官方 Docker Compose 用于本地/开发体验，不是生产模板；Windows 不是其正式支持环境，完整开发构建在低内存环境可能很慢。
 - 因此在 Docker Desktop 的 Linux 容器/WSL2 环境中先做 spike，按 `target-light` 与 `target-reports` 分开，不把成功写成预设事实。
@@ -102,6 +105,10 @@ Windows 路径映射到容器时必须转换为容器内挂载路径；不得在
 - [Security and roles](https://superset.apache.org/admin-docs/security/)
 - [Alerts and Reports](https://superset.apache.org/admin-docs/configuration/alerts-reports/)
 - [Docker Compose](https://superset.apache.org/admin-docs/installation/docker-compose/)
+- [Superset 6.1.0 Using AI / MCP](https://superset.apache.org/user-docs/6.1.0/using-superset/using-ai-with-superset/)
+- [MCP Server deployment and authentication](https://superset.apache.org/admin-docs/configuration/mcp-server/)
+
+MCP 风险闸门至少记录：6.1.0 镜像中可用启动命令/依赖、`/mcp` 连通性、实际工具目录及哈希、开发认证与求职演示认证边界、Superset RBAC、写工具禁用、OpsPilot 稳定工具/允许列表、审计日志、响应大小/超时、峰值资源和断连降级。必须单独验证 `health_check` 只代表 MCP Server/连接，不得代替 Superset Web/API、Worker/Beat/Redis 或业务任务健康。验证前不新增独立 OpsPilot MCP Server。
 
 ## 7. 启动 profile 与资源实测
 
@@ -109,13 +116,14 @@ Windows 路径映射到容器时必须转换为容器内挂载路径；不得在
 
 - `core`：一个 OpsPilot 应用容器 + 独立 PostgreSQL/pgvector；应用镜像不内置本地模型文件。
 - `target-light`：Superset Web/API 和最小元数据/示例资源。
+- `target-mcp`：在 `target-light` 基础上按需启动 Superset 原生 MCP 进程；是否合并 profile 由 OP-003 资源和生命周期实测决定。
 - `target-reports`：按需增加 Target Redis、Worker、单一 Beat；浏览器类导出单独验证。
 - `ingest-eval`：批量 Embedding/Reranker/评测，避免和完整报表栈同时高负载。
 - `observability`：可选观测组件。
 
 实测：pgvector 冷启动约 4.15 s、约 70.88 MiB；`target-light` 冷启动约 72.6 s、约 304.3 MiB；`target-reports` 冷启动约 62.77 s，稳定样本约 834.7 MiB（DB 51.21、Redis 8.80、Web 255.3、worker 290.8、beat 228.6 MiB）。首次 Superset DNS 配置和 beat 写目录失败均已复盘修复；修复后无异常重启。
 
-硬要求：不默认同时运行两模型组合与完整 reports profile。日常使用 `core + target-light`；检索/评测切到 `ingest-eval`；reports 场景按需切换。Docker 配额可由项目所有者后续增加，但 profiles 仍保留，不能用更大配额掩盖服务职责。
+硬要求：不默认同时运行两模型组合与完整 reports profile。日常使用 `core + target-light`；MCP 兼容/演示按需增加 `target-mcp`；检索/评测切到 `ingest-eval`；reports 场景按需切换。Docker 配额可由项目所有者后续增加，但 profiles 仍保留，不能用更大配额掩盖服务职责。
 
 ## 8. 目标系统与 Agent 服务命名
 
@@ -124,6 +132,7 @@ Windows 路径映射到容器时必须转换为容器内挂载路径；不得在
 ```text
 opspilot-postgres
 superset-app
+superset-mcp
 superset-metadata-db
 superset-redis
 superset-worker
@@ -155,5 +164,6 @@ Agent 不连接 Docker Socket。故障注入控制面只在测试 profile/网络
 2. Reranker 按需/串行加载或在无收益时关闭。
 3. 模型放宿主机单进程，容器只调用受控本地服务。
 4. Agent Server 回退 FastAPI + LangGraph 开源持久化。
-5. Superset 重型场景使用明确标记的确定性 fixture，但至少保留真实 API/状态链路。
-6. 更换模型或核心数据库必须有新 ADR 和评测，不直接决定。
+5. Superset MCP 不可用时保留原生只读适配器，并在 UI/轨迹明确标记降级；不自制假 MCP 冒充原生兼容。
+6. Superset 重型场景使用明确标记的确定性 fixture，但至少保留真实 API/状态链路。
+7. 更换模型或核心数据库必须有新 ADR 和评测，不直接决定。
