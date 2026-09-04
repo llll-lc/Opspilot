@@ -1,0 +1,46 @@
+/* Token 结构源自 langchain-ai/agent-chat-ui@325517352ca3672c8bc0745c4143b2301dd74997（MIT）。 */
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.985 0.006 180);
+  --foreground: oklch(0.205 0.02 190);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.205 0.02 190);
+  --primary: oklch(0.43 0.075 185);
+  --primary-foreground: oklch(0.99 0.003 180);
+  --muted: oklch(0.94 0.014 180);
+  --muted-foreground: oklch(0.48 0.025 190);
+  --accent: oklch(0.92 0.035 180);
+  --accent-foreground: oklch(0.26 0.04 190);
+  --border: oklch(0.86 0.02 185);
+  --input: oklch(0.86 0.02 185);
+  --ring: oklch(0.55 0.08 185);
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -9,6 +9,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # OP-001 downloads and transient runtime data
 spikes/op001/vendor/
@@ -18,6 +21,10 @@ spikes/op001/results/*.local.json
 # Common local artifacts
 node_modules/
 .next/
+frontend/.next/
+frontend/node_modules/
+*.tsbuildinfo
+.cache/
 *.log
 *.pid
 *.sqlite*

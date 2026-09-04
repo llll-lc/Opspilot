@@ -4,9 +4,9 @@
 
 ## 当前阶段
 
-`OP-001 风险闸门完成；ADR-003 架构升级已确认；准备进入 OP-002 仓库脚手架`
+`OP-002 仓库脚手架与前端基线完成；准备进入 OP-003 风险闸门与故障真值`
 
-当前仓库只包含规格、ADR、可删除兼容性 spike 和 OP-001 交接；尚未开发正式工单、知识、Agent 图、工具网关、故障场景或业务 UI。
+仓库已有可运行但不含业务能力的 FastAPI/Next.js 基线、锁文件、质量门禁和前端工作台壳；尚未开发正式工单、知识、Agent 图、工具网关、故障场景或业务 UI。
 
 ## 已完成
 
@@ -26,18 +26,22 @@
 - 已接受 CR-003 / ADR-003：采用确定性底座、独立主 Agent、Skill/可降级 MCP、可关闭只读 Specialist 四层架构；RAG、Skill、MCP、Specialist 分轴评测。
 - 已确认 Agent 只调用 OpsPilot 稳定工具名；Tool Gateway 映射 MCP/REST/Probe，且 MCP `health_check` 不代表完整目标系统健康。
 - 已确认 RAG 目标链路和结构感知父子切块；ColBERT、HNSW 等延后项按风险文档中的重评条件处理。
+- 已建立 Python 3.12 `uv` 后端包、FastAPI 进程级健康入口、pytest/ruff/mypy/coverage 门禁和 `uv.lock`；健康入口不探测数据库、模型或目标系统。
+- 已建立 Next.js/React/TypeScript 工作台壳、`pnpm-lock.yaml`、Prettier/ESLint/typecheck/production build 门禁与 GitHub Actions 质量工作流。
+- 已接入官方 `langchain-ai/agent-chat-ui` 固定 commit `325517352ca3672c8bc0745c4143b2301dd74997` 的 MIT 视觉原语；来源/许可证保留在 `frontend/THIRD_PARTY_NOTICES.md`，未复制其 API passthrough、认证、API key 或线程运行时。
+- 已仅以空 `Protocol` 包边界和默认关闭的配置 Schema 预留 Agent、MCP Provider、Skill Registry 与 Specialist；未实现连接、加载、节点或委派。
 
 ## 尚未完成
 
-- 尚未创建正式后端/前端代码结构、依赖锁、迁移或 CI 门禁。
+- 尚未实现 PostgreSQL 领域模型/迁移、认证/RBAC、工单、RAG、稳定工具网关、MCP/REST/Probe Provider、Agent 图、Skill、Specialist/委派、审批、故障真值或评测。
 - 尚未实现 Superset 故障场景/MCP 风险闸门、知识库/Skills、工单、工具网关、Agent 图/子智能体、审批或评测。
 - 尚未构建最终 OpsPilot 应用镜像；该实现属于 OP-011，不得提前。
 
 ## 下一任务
 
-`OP-002：仓库脚手架与前端基线`
+`OP-003：Superset 最小目标系统、原生 MCP 风险闸门与故障真值`
 
-执行前先创建/补全 `tasks/OP-002.md`，并读取 `handoffs/OP-001.md`、ADR-003 和学习地图。OP-002 只负责正式仓库结构、配置、前后端基线与质量门禁；只预留 Agent、MCP Provider、Skill Registry 和委派包边界，不实现任何相关业务、工具映射、Skill 加载或子智能体。
+执行前先创建/补全 `tasks/OP-003.md`，并读取 `handoffs/OP-002.md`、ADR-003、故障真值与安全规格。OP-003 必须先验证固定 Superset 6.1.0 的 MCP 启动、目录、认证/RBAC、工具禁用、审计、资源、健康语义与降级，再建立最少的真实可重复故障真值；不得实现 OP-004 领域模型或 OP-006 Tool Gateway。
 
 ## 当前阻塞与外部事项
 
@@ -45,9 +49,10 @@
 - Superset 6.1.0 原生 MCP 已有官方版本化用户文档依据，但本地镜像的启动、认证、工具禁用、审计、资源和降级尚未验证；该风险闸门属于 OP-003，不在 OP-002 提前实现。
 - 本地 `.env` 已存在并被 Git 忽略；后续不得输出、提交或复制其中的 DeepSeek Key。
 - Docker 当前分配约 6.70 GiB，项目所有者表示后续可增加；即使增加，profiles 与按需模型策略仍保留。
+- Windows Python Launcher 当前未注册 Python 3.12；仓库仍可用 `D:\Agent\OpsPilot\.op001-venv\Scripts\python.exe`（3.12.4）由 uv 建立 `.venv`。不修改全局 Python；本地命令使用 `uv --cache-dir .cache/uv ...` 避开受限的全局 uv 缓存。
 
 ## 新会话启动语句
 
 ```text
-继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md、tasks/OP-002.md 和 handoffs/OP-001.md，检查 Git 与实际文件。按 ADR-003 四层架构工作；本会话只执行 OP-002，只预留 Agent/MCP Provider/Skill/委派包边界，不实现相关业务。
+继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md、tasks/OP-003.md 和 handoffs/OP-002.md，检查 Git、锁文件和实际环境。按 ADR-003 四层架构工作；本会话只执行 OP-003，先做 Superset MCP 风险闸门和最小故障真值，不实现后续领域模型、Tool Gateway 或 Agent 业务。
 ```

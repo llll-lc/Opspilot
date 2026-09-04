@@ -2,7 +2,58 @@
 
 OpsPilot 是一个面向企业内部 IT / 数据平台支持团队的“智能故障诊断与工单闭环 Agent”。它根据用户故障描述主动补问，查询系统状态、权限、任务和日志，结合运维知识形成可引用的根因判断；低风险动作可受控执行，高风险动作进入人工审批，最后验证恢复并更新工单。
 
-当前仓库处于“OP-001 风险闸门完成、尚未开始正式业务编码”阶段。
+当前仓库处于“OP-002 脚手架完成、尚未开始正式业务编码”阶段。现有界面和 API 只验证应用边界，绝不伪造诊断、工单或目标系统结果。
+
+## 本地开发（OP-002）
+
+后端使用 Python 3.12、uv 与项目内缓存；当前 Windows Python Launcher 未注册 3.12 时，uv 会复用 OP-001 已验证的隔离解释器。首次同步后可以启动仅含进程健康检查的 API：
+
+```powershell
+uv --cache-dir .cache/uv sync --group dev
+uv --cache-dir .cache/uv run uvicorn opspilot.main:app --reload
+```
+
+访问 `http://localhost:8000/api/v1/healthz` 只会返回 OpsPilot 进程名称和版本，不会连接数据库、模型或 Superset。
+
+前端是独立的 OpsPilot 边界；它没有复制上游 LangGraph passthrough、浏览器 API key 或认证模型：
+
+```powershell
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend dev
+```
+
+可在 `http://localhost:3000` 查看中文工作台壳。`frontend/.env.example` 仅允许配置公开的 OpsPilot API 根地址，目标系统凭据和认证秘密不得进入浏览器。
+
+### 质量门禁
+
+```powershell
+uv --cache-dir .cache/uv lock --check
+uv --cache-dir .cache/uv run ruff check .
+uv --cache-dir .cache/uv run ruff format --check .
+uv --cache-dir .cache/uv run mypy src
+uv --cache-dir .cache/uv run pytest
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend format:check
+pnpm --dir frontend lint
+pnpm --dir frontend typecheck
+pnpm --dir frontend build
+```
+
+GitHub Actions 在每个 push 和 pull request 执行同一组后端、前端检查。
+
+### 仓库边界
+
+```text
+src/opspilot/api/              自有 FastAPI HTTP 边界（当前只有 process health）
+src/opspilot/config/           Pydantic 配置与默认关闭的增强开关
+src/opspilot/agent/            OP-007 前仅 Incident Commander Protocol
+src/opspilot/providers/mcp/    OP-003/006 前仅 MCP Provider Protocol
+src/opspilot/skills/           OP-005 前仅 Skill Registry Protocol
+src/opspilot/specialists/      OP-009 前仅 Specialist Protocol
+frontend/                      Next.js 工作台与 MIT 保留的 UI 基线
+```
+
+这些目录不是已实现功能。MCP 连接、Skill 加载、Tool Gateway、LangGraph 节点、委派、RAG、工单和认证分别由后续任务负责。
 
 ## 项目要解决的问题
 
