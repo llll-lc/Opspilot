@@ -1,0 +1,26 @@
+name: opspilot
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm
+    environment:
+      POSTGRES_DB: ${OPSPILOT_POSTGRES_DB:-opspilot}
+      POSTGRES_USER: ${OPSPILOT_POSTGRES_USER:-opspilot}
+      POSTGRES_PASSWORD: ${OPSPILOT_POSTGRES_PASSWORD:-opspilot-local-only}
+    ports:
+      - "127.0.0.1:${OPSPILOT_POSTGRES_PORT:-55432}:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - opspilot-postgres-data:/var/lib/postgresql/data
+    profiles: ["core"]
+
+volumes:
+  opspilot-postgres-data:

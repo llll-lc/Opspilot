@@ -1,6 +1,6 @@
 # 03 领域模型与数据设计
 
-本文件定义业务概念和关系，具体表名、字段类型、索引与迁移由 OP-004 实现后回写。概念模型不是最终 SQL。
+本文件定义业务概念和关系。OP-004 已在第 15 节回写首批实际表、字段类型、约束与迁移落点；其余尚未实现的概念模型仍不是最终 SQL。
 
 ## 1. 核心实体
 
@@ -240,3 +240,26 @@ Prompt、Schema、AgentDefinition、Skill、稳定工具、ProviderBinding、MCP
 - 目标系统日志进入证据前先脱敏并限制长度；原始样本放受控对象存储。
 - 不保存隐藏思维链，只保存用户可理解的理由、结构化假设和证据关系。
 - 删除演示数据前设计引用与对象清理并测试；不得对 D 盘或工作区根目录做递归删除。
+
+## 15. OP-004 实际落点
+
+首个迁移为 `migrations/versions/0001_create_core_domain_schema.py`，数据库组合根在 `src/opspilot/db/`。本阶段实际创建 11 张表：
+
+| 组 | 实际表 | 已固化的边界 |
+|---|---|---|
+| 范围 | `organizations`、`target_systems` | UUID 主键；目标系统用复合外键绑定组织 |
+| 知识身份与版本 | `knowledge_documents`、`knowledge_document_versions` | 来源身份和内容快照分开；文档版本号与 SHA-256 不静默覆盖 |
+| 检索版本与块 | `retrieval_index_versions`、`knowledge_chunks` | 冻结 chunking、Dense/Sparse/精确匹配及融合配置版本；父子块绑定同组织、目标、文档版本和索引版本 |
+| 稳定工具与 Provider | `tool_definitions`、`tool_provider_bindings`、`provider_catalog_snapshots` | 稳定工具契约与上游名分离；MCP 绑定必须留目录哈希；发现目录本身不授予权限 |
+| 执行与审计 | `tool_executions`、`audit_events` | 保存稳定名、Schema、实际 Provider/Binding、上游名、授权范围、安全摘要、关联 ID、降级原因和审计事件 |
+
+实现细节：
+
+- PostgreSQL 17 使用固定 `pgvector` 0.8.6；`knowledge_chunks.dense_embedding` 是 `vector(1024)`，Sparse lexical weights 使用 JSONB 对象并由触发器拒绝非数值权重。
+- 父块只能保存上下文，不能保存 Dense/Sparse 表示；子块必须引用同范围内真正的父块。READY 子块必须同时具有 Dense/Sparse 表示，且其表示版本必须与 `retrieval_index_versions` 一致。
+- 检索过滤索引只覆盖组织、目标、检索版本、块类型和表示状态；未创建 HNSW/IVFFlat。实际精确 Dense 查询和混合评分属于 OP-005。
+- Provider 绑定通过复合外键保持组织/目标范围；`tool_executions` 的工具定义必须与实际 binding 对应。MCP 或带目录哈希的 binding 必须关联同范围、同 Provider、同端点、同目录哈希的 CatalogSnapshot，不能只保存 binding 名称。
+- `knowledge_document_versions`、CatalogSnapshot、ToolExecution 和 AuditEvent 是 append-only；UPDATE/DELETE 均由数据库拒绝。检索版本只允许 `BUILDING → READY/FAILED` 与 `READY → RETIRED` 的生命周期转换，ToolDefinition/ProviderBinding 只允许变更 `enabled` 生命周期字段；配置或语义变化必须创建新版本和追加审计事件。
+- ORM 导入和 FastAPI 启动不会连接数据库；连接、Engine 与 Session 都由显式工厂创建。迁移必须显式接收 OpsPilot `DATABASE_URL`，不能猜测或复用 Superset 元数据库。
+
+本阶段故意未创建 User、SupportCase、DiagnosticRun、Evidence、Action/Approval/Verification、Agent/Skill/Delegation 和 Evaluation 表。它们分别由 OP-006、OP-007、OP-009 等责任任务在状态机、授权和幂等规则确定后迁移，避免本任务提前冻结错误契约。

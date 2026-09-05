@@ -2,13 +2,14 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 LAB_ROOT = Path(__file__).parents[1] / "labs" / "op003"
 
 
 def load_scenarios() -> dict[str, Any]:
-    return json.loads((LAB_ROOT / "fault_scenarios.json").read_text(encoding="utf-8"))
+    payload = json.loads((LAB_ROOT / "fault_scenarios.json").read_text(encoding="utf-8"))
+    return cast(dict[str, Any], payload)
 
 
 def test_gate_a_scenarios_are_machine_readable_and_safe() -> None:
