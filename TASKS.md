@@ -9,7 +9,7 @@
 | OP-000 | 项目规格与跨会话文档 | DONE | 无 | 规格、ADR、任务与交接体系 |
 | OP-001 | 环境、资源与关键兼容性风险闸门 | DONE | OP-000 | 冲突审计、版本/资源基准、技术回退结论 |
 | OP-002 | 仓库脚手架与前端基线 | DONE | OP-001 | 后端/前端结构、配置、质量门禁；只预留 Agent/MCP Provider/Skill/委派包边界 |
-| OP-003 | Superset 最小目标系统、原生 MCP 风险闸门与故障真值 | NOT_STARTED | OP-001,OP-002 | 真实 API/MCP 兼容、安全、健康语义、降级证据；三类/五个场景 |
+| OP-003 | Superset 最小目标系统、原生 MCP 风险闸门与故障真值 | DONE | OP-001,OP-002 | 真实 API/MCP 风险证据（原生只读/大小闸门 FAIL）、健康语义、降级方向；三类/五个场景 |
 | OP-004 | 基础设施与核心领域模型 | NOT_STARTED | OP-002,OP-003 | PostgreSQL/pgvector、父子块/检索版本、稳定工具/Provider 审计、迁移 |
 | OP-005 | 知识、混合 RAG、Skills 与独立评测 | NOT_STARTED | OP-003,OP-004 | 父子切块、精确+Dense+Sparse+RRF+Reranker、RAG 消融、首批 Skills |
 | OP-006 | 工单、身份、稳定工具网关与 Provider | NOT_STARTED | OP-003,OP-004 | 工单状态机、稳定工具、REST/Probe/MCP 映射与降级、RBAC、审计、幂等 |

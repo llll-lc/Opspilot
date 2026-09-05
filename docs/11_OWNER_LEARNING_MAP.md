@@ -4,6 +4,8 @@
 
 本地图帮助项目所有者在每个 OP 开始前建立必要概念，在完成后用自己的语言复盘。它不是技术规格、任务状态或实现证据，不记录版本号、工具允许列表、阈值和测试结果；发生冲突时，以链接的 ADR、专题规格、当前任务、实际代码/测试和交接为准。
 
+各阶段完成后的实际学习总结记录在 [`docs/12_OWNER_TECHNICAL_REVIEW.md`](12_OWNER_TECHNICAL_REVIEW.md)；本文件只维护学习顺序和目标。
+
 使用方法：
 
 1. 开始任务前先执行 [`AGENTS.md`](../AGENTS.md) 和 [`docs/07_DEVELOPMENT_WORKFLOW.md`](07_DEVELOPMENT_WORKFLOW.md) 的新会话流程，再阅读本表对应入口。

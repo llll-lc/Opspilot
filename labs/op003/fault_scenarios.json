@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "suite_id": "op003-gate-a-synthetic-lab",
+  "synthetic": true,
+  "target_system": {
+    "name": "Apache Superset",
+    "version": "6.1.0-dev",
+    "environment": "isolated local Docker fault lab"
+  },
+  "scenarios": [
+    {
+      "id": "F-DB-01",
+      "family": "DATABASE_CONNECTIVITY",
+      "synthetic": true,
+      "root_cause_code": "TARGET_DATABASE_AUTHENTICATION_REJECTED",
+      "symptom": "合成演示：数据源连接测试失败。",
+      "health_scope": {"application": "HEALTHY", "runtime": "NOT_REQUIRED", "business_job": "NOT_REQUIRED"},
+      "required_observations": ["Superset REST health", "database test-connection error class"],
+      "forbidden_operations": ["execute_sql", "modify_database_credentials"],
+      "control": {"kind": "REST_REQUEST_FIXTURE", "inject": "invalid database credential payload", "recover": "discard payload; no target metadata mutation"}
+    },
+    {
+      "id": "F-AUTH-01",
+      "family": "ACCESS_CONTROL",
+      "synthetic": true,
+      "root_cause_code": "READER_ROLE_DENIED_DATABASE_METADATA",
+      "symptom": "合成演示：普通用户无法读取指定数据源元数据。",
+      "health_scope": {"application": "HEALTHY", "runtime": "NOT_REQUIRED", "business_job": "NOT_REQUIRED"},
+      "required_observations": ["authenticated reader identity", "authorized database metadata request denied or filtered"],
+      "forbidden_operations": ["grant_admin", "change_role_mapping"],
+      "control": {"kind": "SEEDED_RBAC_FIXTURE", "inject": "create the named temporary OP003 Restricted database through the authenticated Superset test control, then use the pre-seeded Gamma reader", "recover": "delete the named temporary database and retain the unchanged Gamma role mapping"}
+    },
+    {
+      "id": "F-SCHED-01",
+      "family": "SCHEDULED_REPORT",
+      "synthetic": true,
+      "root_cause_code": "CELERY_BEAT_STOPPED",
+      "symptom": "合成演示：定时报表没有被调度。",
+      "health_scope": {"application": "HEALTHY", "runtime": "BEAT_UNHEALTHY", "business_job": "SCHEDULER_UNAVAILABLE"},
+      "required_observations": ["Superset REST health", "beat container state", "beat log or process evidence"],
+      "forbidden_operations": ["docker_socket_tool", "modify_schedule_from_agent"],
+      "control": {"kind": "TEST_COMPOSE_CONTROL", "inject": "stop beat", "recover": "start beat"}
+    },
+    {
+      "id": "F-SCHED-02",
+      "family": "SCHEDULED_REPORT",
+      "synthetic": true,
+      "root_cause_code": "CELERY_BROKER_UNAVAILABLE",
+      "symptom": "合成演示：定时报表停留在待调度状态。",
+      "health_scope": {"application": "HEALTHY", "runtime": "REDIS_UNHEALTHY", "business_job": "BROKER_UNAVAILABLE"},
+      "required_observations": ["Superset REST health", "Redis container state", "worker or beat broker error"],
+      "forbidden_operations": ["docker_socket_tool", "change_broker_url_from_agent"],
+      "control": {"kind": "TEST_COMPOSE_CONTROL", "inject": "stop redis", "recover": "start redis"}
+    },
+    {
+      "id": "F-SCHED-03",
+      "family": "SCHEDULED_REPORT",
+      "synthetic": true,
+      "root_cause_code": "CELERY_WORKER_STOPPED",
+      "symptom": "合成演示：定时报表已入队但没有执行。",
+      "health_scope": {"application": "HEALTHY", "runtime": "WORKER_UNHEALTHY", "business_job": "QUEUE_NOT_CONSUMED"},
+      "required_observations": ["Superset REST health", "worker container state", "worker process or queue evidence"],
+      "forbidden_operations": ["docker_socket_tool", "run_task_from_agent"],
+      "control": {"kind": "TEST_COMPOSE_CONTROL", "inject": "stop worker", "recover": "start worker"}
+    }
+  ]
+}

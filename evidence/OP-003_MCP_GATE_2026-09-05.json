@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-05T01:53:54Z",
+  "target": {
+    "image": "apache/superset:6.1.0-dev",
+    "mcp_url": "http://127.0.0.1:5008/mcp"
+  },
+  "connector": {
+    "initialize_status": 200,
+    "health_check_status": 200,
+    "health_check_response_bytes": 411,
+    "health_check_is_connector_evidence_only": true
+  },
+  "application": {
+    "web_health_status": 200
+  },
+  "runtime": {
+    "profile": "target-mcp",
+    "worker_beat_redis_status": "NOT_STARTED_BY_DESIGN"
+  },
+  "authentication": {
+    "unauthenticated_status": 401,
+    "invalid_jwt_status": 401,
+    "valid_jwt_status": 200,
+    "status": "PASS"
+  },
+  "rbac": {
+    "reader_list_databases_status": 200,
+    "reader_response_has_error": false,
+    "reader_tool_is_error": false,
+    "reader_database_count": null,
+    "status": "OBSERVED_REQUIRES_OP006_SERVER_POLICY"
+  },
+  "catalog": {
+    "tool_count": 24,
+    "tool_names": [
+      "add_chart_to_existing_dashboard",
+      "create_virtual_dataset",
+      "execute_sql",
+      "generate_chart",
+      "generate_dashboard",
+      "generate_explore_link",
+      "get_chart_data",
+      "get_chart_info",
+      "get_chart_preview",
+      "get_chart_type_schema",
+      "get_dashboard_info",
+      "get_database_info",
+      "get_dataset_info",
+      "get_instance_info",
+      "get_schema",
+      "health_check",
+      "list_charts",
+      "list_dashboards",
+      "list_databases",
+      "list_datasets",
+      "open_sql_lab_with_context",
+      "save_sql_query",
+      "update_chart",
+      "update_chart_preview"
+    ],
+    "sha256": "909d8f8619022707d06e10fdda39f39e880ca34e8d1b4e0413877ec7234dc975",
+    "response_bytes": 49154,
+    "dangerous_tools": [
+      "add_chart_to_existing_dashboard",
+      "create_virtual_dataset",
+      "execute_sql",
+      "generate_chart",
+      "generate_dashboard",
+      "generate_explore_link",
+      "open_sql_lab_with_context",
+      "save_sql_query",
+      "update_chart",
+      "update_chart_preview"
+    ],
+    "native_read_only_gate": "FAIL"
+  },
+  "audit": {
+    "native_log_observed": true,
+    "status": "OBSERVED"
+  },
+  "response_and_timeout": {
+    "response_size": {
+      "request": {
+        "rpc_method": "tools/call",
+        "tool": "get_instance_info",
+        "arguments": {}
+      },
+      "configured_limit": {
+        "value": 1,
+        "unit": "tokens",
+        "container_environment_value": 1,
+        "matches_requested_value": true
+      },
+      "tool": "get_instance_info",
+      "status_code": 200,
+      "response_bytes": 416,
+      "size_guard_rejected": false,
+      "expected_outcome": "MCP tool result isError=true when the configured limit is exceeded",
+      "status": "FAIL",
+      "fallback_direction": "Do not expose the raw catalog; OP-006 must use stable-tool allowlists and REST/read-only Probe fallback."
+    },
+    "timeout": {
+      "tool": "tools/list",
+      "client_timeout_seconds": 0.0001,
+      "status_code": 0,
+      "status": "PASS"
+    }
+  },
+  "fallback": {
+    "status": "REQUIRED",
+    "direction": "OP-006 must use a fixed stable-tool allowlist with REST/read-only Probe fallback; do not expose this raw catalog."
+  },
+  "verification_gate": {
+    "require_size_rejection": true,
+    "status": "FAIL",
+    "process_exit_code": 1,
+    "reason": "The required response-size rejection was not observed."
+  }
+}

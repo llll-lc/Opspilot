@@ -1,10 +1,10 @@
 # CURRENT_STATE
 
-更新时间：2026-09-04
+更新时间：2026-09-05
 
 ## 当前阶段
 
-`OP-002 仓库脚手架与前端基线完成；准备进入 OP-003 风险闸门与故障真值`
+`OP-003 风险闸门与 Gate A 故障真值完成；准备进入 OP-004 领域模型`
 
 仓库已有可运行但不含业务能力的 FastAPI/Next.js 基线、锁文件、质量门禁和前端工作台壳；尚未开发正式工单、知识、Agent 图、工具网关、故障场景或业务 UI。
 
@@ -33,20 +33,21 @@
 
 ## 尚未完成
 
-- 尚未实现 PostgreSQL 领域模型/迁移、认证/RBAC、工单、RAG、稳定工具网关、MCP/REST/Probe Provider、Agent 图、Skill、Specialist/委派、审批、故障真值或评测。
-- 尚未实现 Superset 故障场景/MCP 风险闸门、知识库/Skills、工单、工具网关、Agent 图/子智能体、审批或评测。
+- 尚未实现 PostgreSQL 领域模型/迁移、认证/RBAC、工单、RAG、稳定工具网关、MCP/REST/Probe Provider、Agent 图、Skill、Specialist/委派、审批或最终评测。
+- 已完成三类五个 Superset 故障真值与原生 MCP 风险闸门。当前 API 证据中，Gamma Reader 对临时命名数据源 `OP003 Restricted` 的 get 为 `404` 且 list 结果过滤该资源，连续三轮后资源已删除；这仅是 Superset 目标侧实测，不是 OpsPilot RBAC 实现。
+- 固定 6.1.0 原生 CLI 的 JWT、审计和连接器语义可用，但默认目录暴露 10 个危险工具，原生只读闸门为 `FAIL`。受控超限测试将隔离 profile 与 MCP 容器环境的上限均确认为 1 token，读取 `get_instance_info` 仍返回 416 B 成功结果而未拒绝，故原生大小限制执行明确为 `FAIL`；验证器在强制拒绝断言下会先写报告、再以退出码 1 安全失败。仅极短客户端超时探针为 `PASS`；OP-006 必须走稳定工具允许列表与 REST/只读 Probe 回退，不能将原生 MCP 直接接入。
 - 尚未构建最终 OpsPilot 应用镜像；该实现属于 OP-011，不得提前。
 
 ## 下一任务
 
-`OP-003：Superset 最小目标系统、原生 MCP 风险闸门与故障真值`
+`OP-004：基础设施与核心领域模型`
 
-执行前先创建/补全 `tasks/OP-003.md`，并读取 `handoffs/OP-002.md`、ADR-003、故障真值与安全规格。OP-003 必须先验证固定 Superset 6.1.0 的 MCP 启动、目录、认证/RBAC、工具禁用、审计、资源、健康语义与降级，再建立最少的真实可重复故障真值；不得实现 OP-004 领域模型或 OP-006 Tool Gateway。
+执行前完整阅读 `tasks/OP-004.md`（若不存在，按模板与规格创建）、`handoffs/OP-003.md`、ADR-003 和当前领域规格。OP-004 仅实现 PostgreSQL/pgvector 领域模型、迁移、父子块/检索版本与 Provider 审计模型；不得导入 OP-003 实验控制脚本，也不得提前实现 Tool Gateway 或 Agent 业务。
 
 ## 当前阻塞与外部事项
 
 - OP-001 本身无阻塞。
-- Superset 6.1.0 原生 MCP 已有官方版本化用户文档依据，但本地镜像的启动、认证、工具禁用、审计、资源和降级尚未验证；该风险闸门属于 OP-003，不在 OP-002 提前实现。
+- Superset 6.1.0 原生 MCP 的本机启动、认证、目录、审计、资源和降级已验证；本机结论是只读目录与响应大小闸门均未通过，风险已移交 OP-006 的稳定工具/REST/Probe 回退实现。
 - 本地 `.env` 已存在并被 Git 忽略；后续不得输出、提交或复制其中的 DeepSeek Key。
 - Docker 当前分配约 6.70 GiB，项目所有者表示后续可增加；即使增加，profiles 与按需模型策略仍保留。
 - Windows Python Launcher 当前未注册 Python 3.12；仓库仍可用 `D:\Agent\OpsPilot\.op001-venv\Scripts\python.exe`（3.12.4）由 uv 建立 `.venv`。不修改全局 Python；本地命令使用 `uv --cache-dir .cache/uv ...` 避开受限的全局 uv 缓存。
@@ -54,5 +55,5 @@
 ## 新会话启动语句
 
 ```text
-继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md、tasks/OP-003.md 和 handoffs/OP-002.md，检查 Git、锁文件和实际环境。按 ADR-003 四层架构工作；本会话只执行 OP-003，先做 Superset MCP 风险闸门和最小故障真值，不实现后续领域模型、Tool Gateway 或 Agent 业务。
+继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md、tasks/OP-004.md 和 handoffs/OP-003.md，检查 Git、锁文件和实际环境。按 ADR-003 四层架构工作；本会话只执行 OP-004，建立 PostgreSQL/pgvector 领域模型与迁移，不实现 Tool Gateway、Provider 运行时或 Agent 业务。
 ```

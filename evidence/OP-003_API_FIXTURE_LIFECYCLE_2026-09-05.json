@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-05T01:34:17Z",
+  "runs": [
+    {
+      "scenario_id": "F-DB-01",
+      "repetition": 1,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "status": 400
+    },
+    {
+      "scenario_id": "F-DB-01",
+      "repetition": 2,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "status": 400
+    },
+    {
+      "scenario_id": "F-DB-01",
+      "repetition": 3,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "status": 400
+    },
+    {
+      "scenario_id": "F-AUTH-01",
+      "repetition": 1,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "target_resource": {
+        "name": "OP003 Restricted",
+        "get": "/api/v1/database/2",
+        "list": "/api/v1/database/?q=(page_size:100)"
+      },
+      "get": {
+        "status": 404,
+        "denied": true,
+        "filtered": true
+      },
+      "list": {
+        "status": 200,
+        "denied": false,
+        "filtered": true
+      }
+    },
+    {
+      "scenario_id": "F-AUTH-01",
+      "repetition": 2,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "target_resource": {
+        "name": "OP003 Restricted",
+        "get": "/api/v1/database/2",
+        "list": "/api/v1/database/?q=(page_size:100)"
+      },
+      "get": {
+        "status": 404,
+        "denied": true,
+        "filtered": true
+      },
+      "list": {
+        "status": 200,
+        "denied": false,
+        "filtered": true
+      }
+    },
+    {
+      "scenario_id": "F-AUTH-01",
+      "repetition": 3,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true,
+      "target_resource": {
+        "name": "OP003 Restricted",
+        "get": "/api/v1/database/2",
+        "list": "/api/v1/database/?q=(page_size:100)"
+      },
+      "get": {
+        "status": 404,
+        "denied": true,
+        "filtered": true
+      },
+      "list": {
+        "status": 200,
+        "denied": false,
+        "filtered": true
+      }
+    }
+  ],
+  "cleanup": {
+    "created_fixture": true,
+    "removed": true
+  },
+  "passed": true
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "suite_id": "op003-gate-a-synthetic-lab",
+  "generated_at": "2026-09-04T08:12:08Z",
+  "profile": "target-reports",
+  "scope": "Only F-SCHED-01..03 use Docker test control; F-DB-01/F-AUTH-01 remain API/RBAC fixtures.",
+  "runs": [
+    {
+      "scenario_id": "F-SCHED-01",
+      "repetition": 1,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-01",
+      "repetition": 2,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-01",
+      "repetition": 3,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-02",
+      "repetition": 1,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-02",
+      "repetition": 2,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-02",
+      "repetition": 3,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-03",
+      "repetition": 1,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-03",
+      "repetition": 2,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    },
+    {
+      "scenario_id": "F-SCHED-03",
+      "repetition": 3,
+      "baseline": true,
+      "fault_active": true,
+      "clean": true
+    }
+  ],
+  "passed": true
+}

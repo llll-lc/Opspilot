@@ -28,3 +28,6 @@ frontend/node_modules/
 *.log
 *.pid
 *.sqlite*
+
+# OP-003 local Superset fault-lab secrets, state and generated evidence
+labs/op003/.runtime/
