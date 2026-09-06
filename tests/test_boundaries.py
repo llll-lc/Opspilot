@@ -10,7 +10,6 @@ from opspilot.specialists.contracts import Specialist
 BOUNDARY_FILES = (
     "agent/contracts.py",
     "providers/mcp/contracts.py",
-    "skills/contracts.py",
     "specialists/contracts.py",
 )
 FORBIDDEN_RUNTIME_TOKENS = ("def ", "async def ", "import langgraph", "import mcp")

@@ -1,0 +1,10 @@
+{
+  "run_at": "2026-09-05T12:24:47.801145+00:00",
+  "git_commit": "27b06315e9d694830b69b83f458fa2b8a5396e10",
+  "index_key": "op005-frozen-corpus",
+  "source_manifest": "opspilot.knowledge-manifest.v1",
+  "query_truth": "opspilot.rag-truth.v1",
+  "dense_model": "BAAI/bge-m3",
+  "reranker": "BAAI/bge-reranker-large",
+  "cpu_serial": true
+}

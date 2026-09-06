@@ -1,0 +1,786 @@
+{
+  "dense": {
+    "summary": {
+      "variant": "dense",
+      "case_count": 12,
+      "recall_at_k": 1.0,
+      "mrr": 0.9583333333333334,
+      "ndcg": 0.9489044006028785,
+      "parent_context_hit_rate": 1.0,
+      "citation_valid_rate": 1.0,
+      "p50_latency_ms": 206.35705000313465,
+      "p95_latency_ms": 220.90413500045543,
+      "peak_rss_bytes": 1312096256,
+      "failures": []
+    },
+    "cases": [
+      {
+        "case_id": "RAG-DB-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "runbook-db-connectivity",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 213.48479999869596,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-02",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-db-connectivity",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 218.91949999553617,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-03",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 201.38800000131596,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-01",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "superset-docs-security",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 196.5786999935517,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-02",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-access-control",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 197.19760000589304,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-03",
+        "ranked_source_keys": [
+          "superset-api-database",
+          "superset-api-database",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 199.7713000018848,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-01",
+        "ranked_source_keys": [
+          "runbook-scheduled-report",
+          "superset-docs-alerts-reports",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 210.7869000028586,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-02",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 208.71360000455752,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-03",
+        "ranked_source_keys": [
+          "runbook-scheduled-report",
+          "runbook-scheduled-report",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 223.32980000646785,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-04",
+        "ranked_source_keys": [
+          "runbook-scheduled-report",
+          "runbook-access-control",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 198.18429999577347,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-LICENSE-01",
+        "ranked_source_keys": [
+          "superset-repository-license",
+          "superset-repository-license"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 204.00050000171177,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-BOUNDARY-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-api-database",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.38685280723454163,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 211.92200000223238,
+        "failure": null
+      }
+    ]
+  },
+  "dense_exact": {
+    "summary": {
+      "variant": "dense_exact",
+      "case_count": 12,
+      "recall_at_k": 0.9166666666666666,
+      "mrr": 0.7777777777777778,
+      "ndcg": 0.7651316913575918,
+      "parent_context_hit_rate": 1.0,
+      "citation_valid_rate": 1.0,
+      "p50_latency_ms": 207.3847499996191,
+      "p95_latency_ms": 222.82074500908493,
+      "peak_rss_bytes": 1302847488,
+      "failures": []
+    },
+    "cases": [
+      {
+        "case_id": "RAG-DB-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "runbook-db-connectivity",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 204.2146000021603,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-02",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-db-connectivity",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 210.99450001202058,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-03",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-api-database"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 189.07340000441764,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-01",
+        "ranked_source_keys": [
+          "superset-docs-security",
+          "runbook-access-control",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 213.8921999867307,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-02",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-access-control",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 195.39829999848735,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-03",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-docs-security"
+        ],
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0,
+        "ndcg": 0.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 207.7179000043543,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-01",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 0.6131471927654584,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 198.20670000626706,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-02",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 207.05159999488387,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-03",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-scheduled-report",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 222.13220001140144,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-04",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-scheduled-report",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 223.66230000625364,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-LICENSE-01",
+        "ranked_source_keys": [
+          "superset-repository-license",
+          "superset-repository-license"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 215.55130000342615,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-BOUNDARY-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-api-database"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333,
+        "ndcg": 0.3065735963827292,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 195.1095999975223,
+        "failure": null
+      }
+    ]
+  },
+  "hybrid": {
+    "summary": {
+      "variant": "hybrid",
+      "case_count": 12,
+      "recall_at_k": 1.0,
+      "mrr": 0.8333333333333334,
+      "ndcg": 0.8499469047580918,
+      "parent_context_hit_rate": 1.0,
+      "citation_valid_rate": 1.0,
+      "p50_latency_ms": 207.24864999647252,
+      "p95_latency_ms": 255.14104499452515,
+      "peak_rss_bytes": 1303629824,
+      "failures": []
+    },
+    "cases": [
+      {
+        "case_id": "RAG-DB-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "runbook-db-connectivity",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 197.46419999864884,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-02",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-db-connectivity",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 259.18799999635667,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-03",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-api-database"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 250.68599999940488,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-01",
+        "ranked_source_keys": [
+          "superset-docs-security",
+          "runbook-access-control",
+          "superset-docs-security"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 251.82989999302663,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-02",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-db-connectivity",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 193.81810000049882,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-03",
+        "ranked_source_keys": [
+          "superset-docs-security",
+          "superset-api-database",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 205.471099994611,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-01",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-databases",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 0.9197207891481876,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 209.02619999833405,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-02",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports",
+          "superset-api-database"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 231.33239999879152,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-03",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-scheduled-report",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 196.97780000569765,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-04",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-scheduled-report",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 213.2473000092432,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-LICENSE-01",
+        "ranked_source_keys": [
+          "superset-repository-license",
+          "superset-repository-license"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 197.05299999623094,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-BOUNDARY-01",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-api-database",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.38685280723454163,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 200.2412000001641,
+        "failure": null
+      }
+    ]
+  },
+  "reranked": {
+    "summary": {
+      "variant": "reranked",
+      "case_count": 12,
+      "recall_at_k": 1.0,
+      "mrr": 0.9583333333333334,
+      "ndcg": 0.9692441461309548,
+      "parent_context_hit_rate": 1.0,
+      "citation_valid_rate": 1.0,
+      "p50_latency_ms": 3095.0314000001526,
+      "p95_latency_ms": 8944.26010500246,
+      "peak_rss_bytes": 5097566208,
+      "failures": []
+    },
+    "cases": [
+      {
+        "case_id": "RAG-DB-01",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "superset-docs-databases",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 14828.863500006264,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-02",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-db-connectivity",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 4129.584599999362,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-DB-03",
+        "ranked_source_keys": [
+          "superset-docs-databases",
+          "superset-docs-databases",
+          "superset-api-database"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 2625.754100008635,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-01",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "superset-docs-security",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 2929.4671999959974,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-02",
+        "ranked_source_keys": [
+          "runbook-access-control",
+          "runbook-access-control",
+          "runbook-access-control"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 3511.1498999904143,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-AUTH-03",
+        "ranked_source_keys": [
+          "superset-api-database",
+          "superset-docs-security",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 2338.739600003464,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-01",
+        "ranked_source_keys": [
+          "runbook-scheduled-report",
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 3257.943000004161,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-02",
+        "ranked_source_keys": [
+          "superset-docs-alerts-reports",
+          "superset-docs-alerts-reports",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 2294.951799995033,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-03",
+        "ranked_source_keys": [
+          "runbook-scheduled-report",
+          "runbook-scheduled-report",
+          "runbook-db-connectivity"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 3551.1659999901894,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-SCHED-04",
+        "ranked_source_keys": [
+          "runbook-db-connectivity",
+          "runbook-scheduled-report",
+          "runbook-scheduled-report"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5,
+        "ndcg": 0.6309297535714575,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 3286.897500001942,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-LICENSE-01",
+        "ranked_source_keys": [
+          "superset-repository-license",
+          "superset-repository-license"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 626.9873999990523,
+        "failure": null
+      },
+      {
+        "case_id": "RAG-BOUNDARY-01",
+        "ranked_source_keys": [
+          "superset-api-database",
+          "runbook-db-connectivity",
+          "superset-docs-databases"
+        ],
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0,
+        "ndcg": 1.0,
+        "parent_context_hit": true,
+        "citation_valid": true,
+        "latency_ms": 2932.119799996144,
+        "failure": null
+      }
+    ]
+  }
+}

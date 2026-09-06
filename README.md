@@ -2,7 +2,7 @@
 
 OpsPilot 是一个面向企业内部 IT / 数据平台支持团队的“智能故障诊断与工单闭环 Agent”。它根据用户故障描述主动补问，查询系统状态、权限、任务和日志，结合运维知识形成可引用的根因判断；低风险动作可受控执行，高风险动作进入人工审批，最后验证恢复并更新工单。
 
-当前仓库已完成 OP-004 的 PostgreSQL/pgvector 数据底座和核心领域模型；尚未实现知识入库/检索、Provider 运行时、认证、工单或 Agent 业务。现有界面和 API 仍只验证应用边界，绝不伪造诊断、工单或目标系统结果。
+当前仓库已完成 OP-005：已增加来源可追溯的最小知识语料、冻结父子块/混合 RAG 实现、独立检索消融和固定 Skill Registry；尚未实现 Provider 运行时、认证、工单、Agent 或业务 UI。现有界面和 API 仍只验证应用边界，绝不伪造诊断、工单或目标系统结果。
 
 ## 本地开发
 
@@ -61,12 +61,12 @@ src/opspilot/db/               OP-004 SQLAlchemy 领域模型和显式连接工�
 migrations/                    OpsPilot PostgreSQL/pgvector Alembic 迁移
 src/opspilot/agent/            OP-007 前仅 Incident Commander Protocol
 src/opspilot/providers/mcp/    OP-003/006 前仅 MCP Provider Protocol
-src/opspilot/skills/           OP-005 前仅 Skill Registry Protocol
+src/opspilot/skills/           OP-005 固定、哈希校验的 Skill Registry
 src/opspilot/specialists/      OP-009 前仅 Specialist Protocol
 frontend/                      Next.js 工作台与 MIT 保留的 UI 基线
 ```
 
-数据库目录是已实现的数据契约，但不包含业务运行时。MCP 连接、Skill 加载、Tool Gateway、LangGraph 节点、委派、RAG、工单和认证分别由后续任务负责。
+数据库目录是已实现的数据契约；`src/opspilot/knowledge/` 实现版本化入库和检索，`skills/` 是固定、哈希校验的三项排障方法，二者不注册或调用工具。MCP 连接、Tool Gateway、LangGraph 节点、委派、工单和认证仍由后续任务负责。知识运行和冻结消融入口见 [`knowledge/README.md`](knowledge/README.md)。
 
 ## 项目要解决的问题
 

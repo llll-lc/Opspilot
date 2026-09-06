@@ -1,10 +1,10 @@
 # CURRENT_STATE
 
-更新时间：2026-09-05
+更新时间：2026-09-06
 
 ## 当前阶段
 
-`OP-004 PostgreSQL/pgvector 与核心领域模型完成；准备进入 OP-005 知识/RAG/Skills`
+`OP-005 知识、混合 RAG、固定 Skills 与独立评测完成；准备进入 OP-006 工单、身份、稳定工具网关与 Provider`
 
 仓库已有可运行但不含诊断业务的 FastAPI/Next.js 基线、锁文件、质量门禁和前端工作台壳，以及经实际 PostgreSQL 验证的 L0 数据契约；尚未开发正式工单、知识入库/检索、Agent 图、工具网关或业务 UI。
 
@@ -35,20 +35,21 @@
 - 已实测 pgvector 0.8.6 的 `vector(1024)`；没有 HNSW/IVFFlat。父子块同范围、READY Dense/Sparse 完整性、表示版本、Sparse 数值权重及 Provider 执行快照由数据库约束/触发器保护。
 - 已完成空库升级、降级、再次升级和 `alembic check`；实际数据库集成测试 2 项通过，完整后端 18 passed / 100% coverage，前端 frozen install、格式、lint、类型和 production build 通过。
 - 已完成 OP-004 最终只读 review 修复：MCP/目录哈希 binding 的执行必须带匹配目录快照；DocumentVersion/CatalogSnapshot/ToolExecution/AuditEvent 为 append-only；检索版本和 Provider/工具契约只允许明确生命周期变更。CI mypy 已与本地统一为 `mypy src tests`，数据库 integration 测试仍为显式本地 PostgreSQL 验证。
+- 已完成 OP-005 提交前 review 修复：冻结检索索引身份贯穿结果/Citation，Reranker off/on/load-or-score-failure 不伪造结果且可安全回退 Hybrid RRF，超长不可分结构单元有可定位的明确支持边界；实际 pgvector 回归还覆盖组织、目标、索引、可见性、来源类型和目标版本的逐项跨范围拒绝。2026-09-06 最终常规后端为 26 passed / 3 skipped、94% coverage；冻结消融未因本次测试/文档收尾重复运行。仍未提交，等待所有者 review。
 
 ## 尚未完成
 
-- 尚未实现认证/RBAC、工单、知识采集/切块/检索、稳定工具网关、MCP/REST/Probe Provider 运行时、Agent 图、Skill、Specialist/委派、审批或最终评测。
-- OP-004 只建立稳定工具/Provider 的审计数据模型，没有注册具体工具、连接 Provider、执行重试或降级；这些仍属于 OP-006。
+- 已完成来源可追溯的最小知识语料、版本冻结的父子切块/入库、BGE-M3 Dense/Sparse、元数据过滤混合检索、可选 Reranker、冻结 RAG 消融和三个固定哈希校验的 Skill；尚未实现认证/RBAC、工单、稳定工具网关、MCP/REST/Probe Provider 运行时、Agent 图、Specialist/委派、审批或最终闭环评测。
+- OP-005 的 Skill 只引用受限的稳定工具名称；没有向 `ToolDefinition` 写入种子、没有连接 Provider 或调用任何工具。OP-004 的工具/Provider 审计模型仍未注册具体工具、执行重试或降级；这些全部属于 OP-006。
 - 已完成三类五个 Superset 故障真值与原生 MCP 风险闸门。当前 API 证据中，Gamma Reader 对临时命名数据源 `OP003 Restricted` 的 get 为 `404` 且 list 结果过滤该资源，连续三轮后资源已删除；这仅是 Superset 目标侧实测，不是 OpsPilot RBAC 实现。
 - 固定 6.1.0 原生 CLI 的 JWT、审计和连接器语义可用，但默认目录暴露 10 个危险工具，原生只读闸门为 `FAIL`。受控超限测试将隔离 profile 与 MCP 容器环境的上限均确认为 1 token，读取 `get_instance_info` 仍返回 416 B 成功结果而未拒绝，故原生大小限制执行明确为 `FAIL`；验证器在强制拒绝断言下会先写报告、再以退出码 1 安全失败。仅极短客户端超时探针为 `PASS`；OP-006 必须走稳定工具允许列表与 REST/只读 Probe 回退，不能将原生 MCP 直接接入。
 - 尚未构建最终 OpsPilot 应用镜像；该实现属于 OP-011，不得提前。
 
 ## 下一任务
 
-`OP-005：知识、混合 RAG、Skills 与独立评测`
+`OP-006：工单、身份、稳定工具网关与 Provider`
 
-执行前完整阅读并补全 `tasks/OP-005.md`、`handoffs/OP-004.md`、ADR-003 和知识/RAG 规格。OP-005 使用现有父子块/检索版本模型实现来源、结构感知切块、完整混合检索链、独立 RAG 消融和首批三个版本化 Skill；不得提前实现 OP-006 Tool Gateway/工单或 OP-007 Agent 图。
+执行前完整阅读并创建 `tasks/OP-006.md`、读取 `handoffs/OP-005.md`、ADR-003 和工具/Provider 规格。复用 OP-005 的 RAG 和固定 Skill，但不得改写其冻结索引、来源或评测真值；实现稳定 Tool Gateway、授权、工单及 REST/Probe/MCP 受控回退，不得提前实现 OP-007 Agent 图。
 
 ## 当前阻塞与外部事项
 

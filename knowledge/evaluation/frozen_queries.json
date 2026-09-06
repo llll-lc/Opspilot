@@ -1,0 +1,19 @@
+{
+  "schema_version": "opspilot.rag-truth.v1",
+  "knowledge_manifest": "opspilot.knowledge-manifest.v1",
+  "frozen_at": "2026-09-05",
+  "cases": [
+    {"case_id":"RAG-DB-01","query":"database connection authentication failed","target_version":"6.1.0","source_types":["OFFICIAL_DOC","INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-db-connectivity","superset-docs-databases"],"requires_parent_context":true,"split":"development"},
+    {"case_id":"RAG-DB-02","query":"AUTHENTICATION_FAILED database test","target_version":"6.1.0","source_types":["INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-db-connectivity"],"requires_parent_context":true,"split":"development"},
+    {"case_id":"RAG-DB-03","query":"connection timeout driver category","target_version":"6.1.0","source_types":["OFFICIAL_DOC"],"expected_source_keys":["superset-docs-databases"],"requires_parent_context":false,"split":"validation"},
+    {"case_id":"RAG-AUTH-01","query":"permission denied dataset access","target_version":"6.1.0","source_types":["OFFICIAL_DOC","INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-access-control","superset-docs-security"],"requires_parent_context":true,"split":"development"},
+    {"case_id":"RAG-AUTH-02","query":"dashboard access denied role scope","target_version":"6.1.0","source_types":["INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-access-control"],"requires_parent_context":true,"split":"validation"},
+    {"case_id":"RAG-AUTH-03","query":"filtered list not found authorization evidence","target_version":"6.1.0","source_types":["OFFICIAL_DOC"],"expected_source_keys":["superset-api-database"],"requires_parent_context":false,"split":"validation"},
+    {"case_id":"RAG-SCHED-01","query":"scheduled report not sent","target_version":"6.1.0","source_types":["OFFICIAL_DOC","INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-scheduled-report","superset-docs-alerts-reports"],"requires_parent_context":true,"split":"development"},
+    {"case_id":"RAG-SCHED-02","query":"reports.scheduler worker beat broker","target_version":"6.1.0","source_types":["OFFICIAL_DOC"],"expected_source_keys":["superset-docs-alerts-reports"],"requires_parent_context":true,"split":"validation"},
+    {"case_id":"RAG-SCHED-03","query":"RUNTIME_COMPONENT report run history","target_version":"6.1.0","source_types":["INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-scheduled-report"],"requires_parent_context":true,"split":"validation"},
+    {"case_id":"RAG-SCHED-04","query":"application healthy but report delivery missing","target_version":"6.1.0","source_types":["INTERNAL_RUNBOOK"],"expected_source_keys":["runbook-scheduled-report"],"requires_parent_context":false,"split":"validation"},
+    {"case_id":"RAG-LICENSE-01","query":"Apache Superset source license redistribution","target_version":"6.1.0","source_types":["OFFICIAL_REPOSITORY"],"expected_source_keys":["superset-repository-license"],"requires_parent_context":false,"split":"development"},
+    {"case_id":"RAG-BOUNDARY-01","query":"do not disclose connection string SQL","target_version":"6.1.0","source_types":["OFFICIAL_DOC","INTERNAL_RUNBOOK"],"expected_source_keys":["superset-api-database","runbook-db-connectivity"],"requires_parent_context":true,"split":"validation"}
+  ]
+}

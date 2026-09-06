@@ -1,0 +1,6 @@
+---
+{"key":"scheduled-report-triage","version":"1.0.0","content_hash":"566da31cfeafedfd7393095fa1df220f7da6ed014fa58b1662563db154a8dbb8","enabled":true,"target_system":"SUPERSET","applicable_versions":["6.1.0"],"trigger_terms":["scheduled report","report not sent","alert not sent","定时报表","调度"],"required_observations":["target application health","runtime component health","report schedule and recent run history"],"stable_tool_sequence":["get_target_application_health","get_target_runtime_health","get_target_report_schedule","get_target_report_run_history"],"evidence_threshold":"Obtain independent application, runtime, and business-job observations before distinguishing schedule configuration from worker or delivery failure.","stop_or_escalate":["Do not use connector health as runtime health.","Escalate when a retry, schedule edit, or worker restart would be required."],"prohibited_actions":["No report rerun.","No schedule edit.","No worker, beat, Redis, or container restart."],"output_schema":"opspilot.skill-output.v1","references":["superset-docs-alerts-reports","runbook-scheduled-report"]}
+---
+# Scheduled report triage
+
+Use this method to preserve the distinction between application, asynchronous runtime, and business-job evidence. It only gathers read-only observations and must stop before retrying a report or changing schedule configuration.
