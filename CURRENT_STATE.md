@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-`OP-006 已完成、经所有者 review 并本地提交；当前方向不 push。OP-005 已由 c1dd538 提交`
+`OP-006 已完成、经所有者 review 并本地提交；所有者已明确授权向 origin/main 正常发布。OP-005 已由 c1dd538 提交`
 
 仓库当前工作树已有经实际 PostgreSQL 验证的身份/RBAC、工单状态机、稳定 Tool Gateway 和受控 REST/Probe/MCP Provider，并已有 OP-005 的冻结知识/检索/Skill；尚未实现 Agent 图、Skill 执行、审批/目标动作、报告调度观察或业务 UI。
 
@@ -50,7 +50,7 @@
 
 `OP-007 仍为 NOT_STARTED；只有明确的新任务授权后才能开始。`
 
-OP-006 的九项证据矩阵在 `tasks/OP-006.md`，完成交接在 `handoffs/OP-006.md`。当前不得 push 或开始 OP-007；不得改写 OP-005 冻结索引、来源、Skill 或评测真值。
+OP-006 的九项证据矩阵在 `tasks/OP-006.md`，完成交接在 `handoffs/OP-006.md`。本次向 `origin/main` 的正常发布已获所有者明确授权；不得开始 OP-007，且不得改写 OP-005 冻结索引、来源、Skill 或评测真值。
 
 ## 当前阻塞与外部事项
 
@@ -64,5 +64,5 @@ OP-006 的九项证据矩阵在 `tasks/OP-006.md`，完成交接在 `handoffs/OP
 ## 新会话启动语句
 
 ```text
-开始新任务前，完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、相关 task/handoff、ADR-003 及 OP-003/004/005/006 交接。OP-006 已完成；未经明确新任务授权不开始 OP-007，且当前不得 push。
+开始新任务前，完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、相关 task/handoff、ADR-003 及 OP-003/004/005/006 交接。OP-006 已完成；未经明确新任务授权不开始 OP-007。本次 OP-006 向 origin/main 的正常发布已获所有者明确授权。
 ```
