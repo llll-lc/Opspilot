@@ -1,12 +1,12 @@
 # CURRENT_STATE
 
-更新时间：2026-09-06
+更新时间：2026-09-07
 
 ## 当前阶段
 
-`OP-005 知识、混合 RAG、固定 Skills 与独立评测完成；准备进入 OP-006 工单、身份、稳定工具网关与 Provider`
+`OP-006 已完成、经所有者 review 并本地提交；当前方向不 push。OP-005 已由 c1dd538 提交`
 
-仓库已有可运行但不含诊断业务的 FastAPI/Next.js 基线、锁文件、质量门禁和前端工作台壳，以及经实际 PostgreSQL 验证的 L0 数据契约；尚未开发正式工单、知识入库/检索、Agent 图、工具网关或业务 UI。
+仓库当前工作树已有经实际 PostgreSQL 验证的身份/RBAC、工单状态机、稳定 Tool Gateway 和受控 REST/Probe/MCP Provider，并已有 OP-005 的冻结知识/检索/Skill；尚未实现 Agent 图、Skill 执行、审批/目标动作、报告调度观察或业务 UI。
 
 ## 已完成
 
@@ -35,21 +35,22 @@
 - 已实测 pgvector 0.8.6 的 `vector(1024)`；没有 HNSW/IVFFlat。父子块同范围、READY Dense/Sparse 完整性、表示版本、Sparse 数值权重及 Provider 执行快照由数据库约束/触发器保护。
 - 已完成空库升级、降级、再次升级和 `alembic check`；实际数据库集成测试 2 项通过，完整后端 18 passed / 100% coverage，前端 frozen install、格式、lint、类型和 production build 通过。
 - 已完成 OP-004 最终只读 review 修复：MCP/目录哈希 binding 的执行必须带匹配目录快照；DocumentVersion/CatalogSnapshot/ToolExecution/AuditEvent 为 append-only；检索版本和 Provider/工具契约只允许明确生命周期变更。CI mypy 已与本地统一为 `mypy src tests`，数据库 integration 测试仍为显式本地 PostgreSQL 验证。
-- 已完成 OP-005 提交前 review 修复：冻结检索索引身份贯穿结果/Citation，Reranker off/on/load-or-score-failure 不伪造结果且可安全回退 Hybrid RRF，超长不可分结构单元有可定位的明确支持边界；实际 pgvector 回归还覆盖组织、目标、索引、可见性、来源类型和目标版本的逐项跨范围拒绝。2026-09-06 最终常规后端为 26 passed / 3 skipped、94% coverage；冻结消融未因本次测试/文档收尾重复运行。仍未提交，等待所有者 review。
+- 已完成 OP-005 提交前 review 修复：冻结检索索引身份贯穿结果/Citation，Reranker off/on/load-or-score-failure 不伪造结果且可安全回退 Hybrid RRF，超长不可分结构单元有可定位的明确支持边界；实际 pgvector 回归还覆盖组织、目标、索引、可见性、来源类型和目标版本的逐项跨范围拒绝。2026-09-06 最终常规后端为 26 passed / 3 skipped、94% coverage；冻结消融未因本次测试/文档收尾重复运行。该结果现已提交为 `c1dd538`。
+- OP-006 已完成：签名 Bearer → 服务端 AuthorizationContext、两组织/多用户 target/resource 隔离、事务 dedupe 与乐观并发工单、12 个稳定只读工具、可重复种子、Gateway Schema/范围/health scope/限长/脱敏，以及逐 binding 尝试的 ToolExecution + AuditEvent。实际 PostgreSQL 迁移重放和 8 项集成回归、真实 Superset REST/Probe、受控 MCP 超限拒绝、常规后端及前端门禁均通过；所有者已完成 review，任务为 DONE。详见 `handoffs/OP-006.md`。
 
 ## 尚未完成
 
-- 已完成来源可追溯的最小知识语料、版本冻结的父子切块/入库、BGE-M3 Dense/Sparse、元数据过滤混合检索、可选 Reranker、冻结 RAG 消融和三个固定哈希校验的 Skill；尚未实现认证/RBAC、工单、稳定工具网关、MCP/REST/Probe Provider 运行时、Agent 图、Specialist/委派、审批或最终闭环评测。
-- OP-005 的 Skill 只引用受限的稳定工具名称；没有向 `ToolDefinition` 写入种子、没有连接 Provider 或调用任何工具。OP-004 的工具/Provider 审计模型仍未注册具体工具、执行重试或降级；这些全部属于 OP-006。
+- 已完成来源可追溯的最小知识语料、版本冻结的父子切块/入库、BGE-M3 Dense/Sparse、元数据过滤混合检索、可选 Reranker、冻结 RAG 消融、三个固定哈希校验的 Skill，以及 OP-006 的确定性工单与工具底座；尚未实现 Agent 图、Skill 运行/选择、Specialist/委派、审批、目标动作、验证或最终闭环评测。
+- OP-006 只注册真实实现并验证的 12 个稳定只读工具。OP-005 冻结的 scheduled-report Skill 所需 report schedule/history 工具因真实 profile API 为 404 且响应契约未验证而未注册；不得把该 Skill 称为已可完整执行。
 - 已完成三类五个 Superset 故障真值与原生 MCP 风险闸门。当前 API 证据中，Gamma Reader 对临时命名数据源 `OP003 Restricted` 的 get 为 `404` 且 list 结果过滤该资源，连续三轮后资源已删除；这仅是 Superset 目标侧实测，不是 OpsPilot RBAC 实现。
 - 固定 6.1.0 原生 CLI 的 JWT、审计和连接器语义可用，但默认目录暴露 10 个危险工具，原生只读闸门为 `FAIL`。受控超限测试将隔离 profile 与 MCP 容器环境的上限均确认为 1 token，读取 `get_instance_info` 仍返回 416 B 成功结果而未拒绝，故原生大小限制执行明确为 `FAIL`；验证器在强制拒绝断言下会先写报告、再以退出码 1 安全失败。仅极短客户端超时探针为 `PASS`；OP-006 必须走稳定工具允许列表与 REST/只读 Probe 回退，不能将原生 MCP 直接接入。
 - 尚未构建最终 OpsPilot 应用镜像；该实现属于 OP-011，不得提前。
 
 ## 下一任务
 
-`OP-006：工单、身份、稳定工具网关与 Provider`
+`OP-007 仍为 NOT_STARTED；只有明确的新任务授权后才能开始。`
 
-执行前完整阅读并创建 `tasks/OP-006.md`、读取 `handoffs/OP-005.md`、ADR-003 和工具/Provider 规格。复用 OP-005 的 RAG 和固定 Skill，但不得改写其冻结索引、来源或评测真值；实现稳定 Tool Gateway、授权、工单及 REST/Probe/MCP 受控回退，不得提前实现 OP-007 Agent 图。
+OP-006 的九项证据矩阵在 `tasks/OP-006.md`，完成交接在 `handoffs/OP-006.md`。当前不得 push 或开始 OP-007；不得改写 OP-005 冻结索引、来源、Skill 或评测真值。
 
 ## 当前阻塞与外部事项
 
@@ -58,9 +59,10 @@
 - 本地 `.env` 已存在并被 Git 忽略；后续不得输出、提交或复制其中的 DeepSeek Key。
 - Docker 当前分配约 6.70 GiB，项目所有者表示后续可增加；即使增加，profiles 与按需模型策略仍保留。
 - Windows Python Launcher 当前未注册 Python 3.12；仓库仍可用 `D:\Agent\OpsPilot\.op001-venv\Scripts\python.exe`（3.12.4）由 uv 建立 `.venv`。不修改全局 Python；本地命令使用 `uv --cache-dir .cache/uv ...` 避开受限的全局 uv 缓存。
+- OP-006 无代码阻塞且已完成。真实 `target-mcp` 只证明 REST 空列表/健康与本地 MCP 目录超限拒绝，未证明报告调度语义或非空真实 get；worker/beat/redis 无独立可信 liveness endpoint 时 Probe 结论保持 `UNKNOWN`。
 
 ## 新会话启动语句
 
 ```text
-继续开发 D:\Agent\OpsPilot。先完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、decisions/ADR-003_CONTROLLED_AGENT_MCP_SKILLS_ARCHITECTURE.md、docs/11_OWNER_LEARNING_MAP.md、tasks/OP-005.md 和 handoffs/OP-004.md，检查 Git、锁文件和实际环境。按 ADR-003 四层架构工作；本会话只执行 OP-005，在 OP-004 数据契约上实现知识、混合 RAG、首批 Skills 与独立评测，不实现 Tool Gateway、工单、Agent 图或 Specialist。
+开始新任务前，完整读取 AGENTS.md、PROJECT_CONTEXT.md、CURRENT_STATE.md、TASKS.md、相关 task/handoff、ADR-003 及 OP-003/004/005/006 交接。OP-006 已完成；未经明确新任务授权不开始 OP-007，且当前不得 push。
 ```

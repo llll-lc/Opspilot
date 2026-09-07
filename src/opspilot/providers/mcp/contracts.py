@@ -1,7 +1,7 @@
-"""为 OP-003 与 OP-006 预留的仅类型 MCP Provider 边界。"""
+"""受控 MCP Provider 的保留边界；具体客户端由 OP-006 Gateway 隔离。"""
 
 from typing import Protocol
 
 
 class McpProvider(Protocol):
-    """仅作标记；本任务不打开 MCP 连接或工具目录。"""
+    """Marker Protocol; no runtime implementation belongs in this reserved contract."""

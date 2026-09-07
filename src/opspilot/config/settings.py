@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     )
 
     database_url: SecretStr | None = Field(default=None, validation_alias="DATABASE_URL")
+    auth_token_secret: SecretStr | None = Field(
+        default=None, validation_alias="OPSPILOT_SECURITY_AUTH_TOKEN_SECRET"
+    )
+    auth_token_issuer: str = Field(
+        default="opspilot-local", validation_alias="OPSPILOT_SECURITY_AUTH_TOKEN_ISSUER"
+    )
+    auth_token_audience: str = Field(
+        default="opspilot-api", validation_alias="OPSPILOT_SECURITY_AUTH_TOKEN_AUDIENCE"
+    )
     superset_base_url: HttpUrl | None = Field(default=None, validation_alias="SUPERSET_BASE_URL")
     superset_mcp_url: HttpUrl | None = Field(default=None, validation_alias="SUPERSET_MCP_URL")
 

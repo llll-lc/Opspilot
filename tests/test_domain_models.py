@@ -17,6 +17,7 @@ class VectorType(Protocol):
 def test_expected_l0_tables_are_registered_without_connecting() -> None:
     assert set(Base.metadata.tables) == {
         "audit_events",
+        "case_messages",
         "knowledge_chunks",
         "knowledge_document_versions",
         "knowledge_documents",
@@ -24,9 +25,14 @@ def test_expected_l0_tables_are_registered_without_connecting() -> None:
         "provider_catalog_snapshots",
         "retrieval_index_versions",
         "target_systems",
+        "target_resources",
         "tool_definitions",
         "tool_executions",
         "tool_provider_bindings",
+        "support_cases",
+        "user_resource_grants",
+        "user_target_scopes",
+        "users",
     }
     assert {model.__tablename__ for model in ALL_MODELS} == set(Base.metadata.tables)
 

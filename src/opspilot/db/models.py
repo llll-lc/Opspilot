@@ -42,8 +42,10 @@ from opspilot.db.enums import (
     RepresentationStatus,
     RetrievalIndexStatus,
     StructureUnitType,
+    SupportCaseStatus,
     ToolExecutionStatus,
     ToolRiskLevel,
+    UserRole,
     Visibility,
 )
 
@@ -102,6 +104,215 @@ class TargetSystem(TimestampMixin, Base):
     version: Mapped[str | None] = mapped_column(String(100))
     configuration_metadata: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=dict, server_default=JSON_OBJECT_DEFAULT
+    )
+
+
+class User(TimestampMixin, Base):
+    """Authenticated human principal; roles and scopes are server-owned facts."""
+
+    __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint("subject", name="uq_users_subject"),
+        UniqueConstraint("organization_id", "id", name="uq_users_organization_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    role: Mapped[UserRole] = mapped_column(enum_type(UserRole, "user_role"), nullable=False)
+    active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+
+
+class UserTargetScope(Base):
+    """Explicit user-to-target grant; no request parameter may expand this scope."""
+
+    __tablename__ = "user_target_scopes"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "user_id"],
+            ["users.organization_id", "users.id"],
+            name="fk_user_target_scopes_scope_user",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "target_system_id"],
+            ["target_systems.organization_id", "target_systems.id"],
+            name="fk_user_target_scopes_scope_target",
+            ondelete="RESTRICT",
+        ),
+        UniqueConstraint("user_id", "target_system_id", name="uq_user_target_scopes_user_target"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    target_system_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class TargetResource(TimestampMixin, Base):
+    """A target-owned resource whose external identifier is never trusted by itself."""
+
+    __tablename__ = "target_resources"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "target_system_id"],
+            ["target_systems.organization_id", "target_systems.id"],
+            name="fk_target_resources_scope_target",
+            ondelete="RESTRICT",
+        ),
+        UniqueConstraint(
+            "organization_id", "target_system_id", "id", name="uq_target_resources_scope_id"
+        ),
+        UniqueConstraint(
+            "organization_id",
+            "target_system_id",
+            "resource_type",
+            "external_id",
+            name="uq_target_resources_external",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    target_system_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    external_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(300), nullable=False)
+
+
+class UserResourceGrant(Base):
+    """Optional least-privilege grant for an individual target resource."""
+
+    __tablename__ = "user_resource_grants"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "user_id"],
+            ["users.organization_id", "users.id"],
+            name="fk_user_resource_grants_scope_user",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "target_system_id", "resource_id"],
+            [
+                "target_resources.organization_id",
+                "target_resources.target_system_id",
+                "target_resources.id",
+            ],
+            name="fk_user_resource_grants_scope_resource",
+            ondelete="RESTRICT",
+        ),
+        UniqueConstraint("user_id", "resource_id", name="uq_user_resource_grants_user_resource"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    target_system_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    resource_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class SupportCase(TimestampMixin, Base):
+    """Durable L0 support case. Agent and approval concepts are intentionally absent."""
+
+    __tablename__ = "support_cases"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "target_system_id"],
+            ["target_systems.organization_id", "target_systems.id"],
+            name="fk_support_cases_scope_target",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "reporter_user_id"],
+            ["users.organization_id", "users.id"],
+            name="fk_support_cases_scope_reporter",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "target_system_id", "resource_id"],
+            [
+                "target_resources.organization_id",
+                "target_resources.target_system_id",
+                "target_resources.id",
+            ],
+            name="fk_support_cases_scope_resource",
+            ondelete="RESTRICT",
+        ),
+        UniqueConstraint("organization_id", "id", name="uq_support_cases_organization_id"),
+        UniqueConstraint(
+            "organization_id", "deduplication_key", name="uq_support_cases_deduplication"
+        ),
+        CheckConstraint("version >= 1", name="version_positive"),
+        Index("ix_support_cases_scope_status", "organization_id", "target_system_id", "status"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    target_system_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    reporter_user_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    resource_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    symptom_code: Mapped[str | None] = mapped_column(String(100))
+    status: Mapped[SupportCaseStatus] = mapped_column(
+        enum_type(SupportCaseStatus, "support_case_status"), nullable=False
+    )
+    deduplication_key: Mapped[str] = mapped_column(String(200), nullable=False)
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default=text("1")
+    )
+
+
+class CaseMessage(Base):
+    """Append-only human-visible timeline item; no model reasoning is stored here."""
+
+    __tablename__ = "case_messages"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "support_case_id"],
+            ["support_cases.organization_id", "support_cases.id"],
+            name="fk_case_messages_scope_case",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "author_user_id"],
+            ["users.organization_id", "users.id"],
+            name="fk_case_messages_scope_author",
+            ondelete="RESTRICT",
+        ),
+        UniqueConstraint(
+            "organization_id", "support_case_id", "id", name="uq_case_messages_scope_id"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    support_case_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    author_user_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
 
@@ -682,6 +893,12 @@ class AuditEvent(Base):
 ALL_MODELS = (
     Organization,
     TargetSystem,
+    User,
+    UserTargetScope,
+    TargetResource,
+    UserResourceGrant,
+    SupportCase,
+    CaseMessage,
     KnowledgeDocument,
     KnowledgeDocumentVersion,
     RetrievalIndexVersion,

@@ -55,6 +55,8 @@ omit = [
   "src/opspilot/knowledge/ingestion.py",
   "src/opspilot/knowledge/models.py",
   "src/opspilot/knowledge/retrieval.py",
+  "src/opspilot/tools/gateway.py",
+  "src/opspilot/tools/seeding.py",
 ]
 
 [tool.coverage.report]

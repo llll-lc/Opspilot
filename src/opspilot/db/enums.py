@@ -76,3 +76,17 @@ class AuditActorType(StrEnum):
     SYSTEM = "SYSTEM"
     USER = "USER"
     AGENT = "AGENT"
+
+
+class UserRole(StrEnum):
+    REPORTER = "REPORTER"
+    SUPPORT = "SUPPORT"
+    APPROVER = "APPROVER"
+    ADMIN = "ADMIN"
+
+
+class SupportCaseStatus(StrEnum):
+    OPEN = "OPEN"
+    DIAGNOSING = "DIAGNOSING"
+    WAITING_USER = "WAITING_USER"
+    ESCALATED = "ESCALATED"

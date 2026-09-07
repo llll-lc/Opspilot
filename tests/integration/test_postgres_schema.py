@@ -310,7 +310,7 @@ def test_provider_execution_audit_chain_rejects_cross_scope_binding() -> None:
             connection.execute(
                 sa.insert(ToolDefinition).values(
                     id=tool_id,
-                    stable_name="check_target_connector_health",
+                    stable_name="op004_test_connector_health",
                     schema_version="1.0.0",
                     contract_hash=HASH_A,
                     business_semantics="Connector reachability only",
@@ -360,7 +360,7 @@ def test_provider_execution_audit_chain_rejects_cross_scope_binding() -> None:
                 "tool_definition_id": tool_id,
                 "provider_binding_id": binding_id,
                 "provider_catalog_snapshot_id": catalog_id,
-                "stable_tool_name_snapshot": "check_target_connector_health",
+                "stable_tool_name_snapshot": "op004_test_connector_health",
                 "tool_schema_version_snapshot": "1.0.0",
                 "provider_type_snapshot": "MCP",
                 "binding_key_snapshot": "superset-mcp-health",
@@ -391,7 +391,17 @@ def test_provider_execution_audit_chain_rejects_cross_scope_binding() -> None:
                     occurred_at=now,
                 )
             )
-            assert connection.scalar(sa.select(sa.func.count()).select_from(AuditEvent)) == 1
+            assert (
+                connection.scalar(
+                    sa.select(sa.func.count())
+                    .select_from(AuditEvent)
+                    .where(
+                        AuditEvent.organization_id == ids["organization"],
+                        AuditEvent.target_system_id == ids["target"],
+                    )
+                )
+                == 1
+            )
 
             missing_catalog_snapshot_values = dict(execution_values)
             missing_catalog_snapshot_values.update(
@@ -454,7 +464,7 @@ def test_provider_execution_audit_chain_rejects_cross_scope_binding() -> None:
             connection.execute(
                 sa.insert(ToolDefinition).values(
                     id=other_tool_id,
-                    stable_name="get_target_application_health",
+                    stable_name="op004_test_application_health",
                     schema_version="1.0.0",
                     contract_hash=HASH_B,
                     business_semantics="Application health only",
